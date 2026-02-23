@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 作品审核页面 (review.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的作品审核页面，采用现代化设计风格：
+- 参考南孚官网的简洁专业风格
+- 参考B站的年轻化交互设计
+- 支持批量审核、快速操作
+- 实时统计和筛选功能
+- 详细的审核记录
+
+【主要功能】
+1. 作品列表：展示待审核、已通过、已拒绝的作品
+2. 批量操作：支持批量通过、批量拒绝
+3. 快速预览：悬停预览、点击查看详情
+4. 筛选排序：按分类、状态、时间筛选
+5. 审核统计：实时显示审核数据
+6. 操作记录：记录每次审核操作
+
+【页面结构】
+- 顶部统计卡片
+- 筛选工具栏
+- 批量操作栏
+- 作品网格列表
+- 分页导航
+- 审核详情弹窗
+
+【技术特点】
+- 响应式设计，适配各种设备
+- 卡片式布局，信息层次清晰
+- 流畅的动画过渡效果
+- 实时数据更新
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v2.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品审核 - 交通图库</title>
+    <meta name="description" content="交通图库作品审核页面，管理员可审核用户上传的摄影作品。">
+    
+    <!-- 全局样式 -->
+    <link rel="stylesheet" href="traffic-gallery/css/global.css">
+    <link rel="stylesheet" href="traffic-gallery/css/layout.css">
+    
+    <!-- 页面专用样式 -->
+    <style>
+        /* ========================================
+           页面整体布局
+           ======================================== */
+        .review-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding-bottom: 60px;
+        }
+        
+        /* ========================================
+           页面头部
+           ======================================== */
+        .review-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px 0;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .review-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .review-header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .review-header h1 {
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+        
+        .review-header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* ========================================
+           统计卡片
+           ======================================== */
+        .stats-section {
+            max-width: 1200px;
+            margin: -40px auto 30px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-number.pending { color: #ff9800; }
+        .stat-number.approved { color: #4CAF50; }
+        .stat-number.rejected { color: #f44336; }
+        .stat-number.total { color: #667eea; }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* ========================================
+           主内容区
+           ======================================== */
+        .review-main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* ========================================
+           筛选工具栏
+           ======================================== */
+        .filter-toolbar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .filter-select,
+        .filter-input {
+            padding: 10px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+        
+        .filter-select {
+            cursor: pointer;
+            min-width: 140px;
+        }
+        
+        .filter-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .filter-btn.secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .filter-btn.secondary:hover {
+            background: #e0e0e0;
+            box-shadow: none;
+        }
+        
+        /* ========================================
+           批量操作栏
+           ======================================== */
+        .batch-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .batch-bar.show {
+            display: flex;
+        }
+        
+        .batch-info {
+            font-weight: 500;
+        }
+        
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .batch-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .batch-btn.approve {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .batch-btn.approve:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .batch-btn.reject {
+            background: #f44336;
+            color: white;
+        }
+        
+        .batch-btn.reject:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+        
+        .batch-btn.cancel {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .batch-btn.cancel:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* ========================================
+           作品网格
+           ======================================== */
+        .works-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .work-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .work-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+        }
+        
+        .work-card.selected {
+            box-shadow: 0 0 0 3px #667eea, 0 12px 35px rgba(0,0,0,0.12);
+        }
+        
+        /* 复选框 */
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid rgba(255,255,255,0.8);
+            background: rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .card-checkbox:hover {
+            background: rgba(102, 126, 234, 0.8);
+            border-color: #667eea;
+        }
+        
+        .card-checkbox.checked {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .card-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* 图片区域 */
+        .work-image-wrap {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .work-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .work-card:hover .work-image {
+            transform: scale(1.08);
+        }
+        
+        /* 状态标签 */
+        .status-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 5;
+        }
+        
+        .status-badge.pending {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .status-badge.approved {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .status-badge.rejected {
+            background: #f44336;
+            color: white;
+        }
+        
+        /* 图片悬停遮罩 */
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .work-card:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .view-btn {
+            padding: 10px 24px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* 内容区域 */
+        .work-content {
+            padding: 20px;
+        }
+        
+        .work-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .work-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .work-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .work-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .work-tag {
+            padding: 4px 10px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        /* 操作按钮 */
+        .work-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .action-btn.approve {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .action-btn.approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .action-btn.reject {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+        
+        .action-btn.reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+        
+        /* ========================================
+           空状态
+           ======================================== */
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+        
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            opacity: 0.5;
+        }
+        
+        .empty-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .empty-desc {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        /* ========================================
+           分页
+           ======================================== */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+        }
+        
+        .page-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            background: white;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .page-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* ========================================
+           详情弹窗
+           ======================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                grid-template-columns: 1fr;
+                max-height: 85vh;
+            }
+        }
+        
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            min-height: 400px;
+        }
+        
+        .modal-info {
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+            flex: 1;
+            padding-right: 15px;
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+        
+        .modal-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .meta-label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .meta-value {
+            font-size: 0.95rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .modal-description {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .modal-tag {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .modal-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn.approve {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .modal-btn.reject {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* ========================================
+           拒绝原因弹窗
+           ======================================== */
+        .reject-reason {
+            margin-bottom: 20px;
+        }
+        
+        .reject-reason label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .reject-reason textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .reject-reason textarea:focus {
+            outline: none;
+            border-color: #f44336;
+        }
+        
+        /* ========================================
+           响应式调整
+           ======================================== */
+        @media (max-width: 768px) {
+            .review-header {
+                padding: 40px 20px;
+            }
+            
+            .review-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+            
+            .filter-select,
+            .filter-input {
+                flex: 1;
+            }
+            
+            .works-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .batch-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .modal-image {
+                min-height: 250px;
+            }
+            
+            .modal-info {
+                padding: 20px;
+            }
+            
+            .modal-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="traffic-gallery/index.html" class="navbar-brand">
+                <span class="navbar-brand-icon">🚗</span>
+                <span>交通图库</span>
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">后台管理</a>
+                </li>
+                <li class="nav-item">
+                    <a href="review.html" class="nav-link active">作品审核</a>
+                </li>
+                <li class="nav-item">
+                    <a href="announcement.html" class="nav-link">公告管理</a>
+                </li>
+                <li class="nav-item">
+                    <a href="log.html" class="nav-link">操作日志</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 页面主体 -->
+    <div class="review-page">
+        <!-- 页面头部 -->
+        <header class="review-header">
+            <div class="review-header-content">
+                <h1>✅ 作品审核中心</h1>
+                <p>审核用户上传的摄影作品，维护平台内容质量</p>
+            </div>
+        </header>
+        
+        <!-- 统计卡片 -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-number pending" id="stat-pending">0</div>
+                    <div class="stat-label">待审核</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-number approved" id="stat-approved">0</div>
+                    <div class="stat-label">已通过</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-number rejected" id="stat-rejected">0</div>
+                    <div class="stat-label">已拒绝</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-number total" id="stat-total">0</div>
+                    <div class="stat-label">全部作品</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 主内容区 -->
+        <main class="review-main">
+            <!-- 筛选工具栏 -->
+            <div class="filter-toolbar">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <span class="filter-label">状态：</span>
+                        <select class="filter-select" id="filter-status">
+                            <option value="all">全部状态</option>
+                            <option value="pending" selected>待审核</option>
+                            <option value="approved">已通过</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">分类：</span>
+                        <select class="filter-select" id="filter-category">
+                            <option value="all">全部分类</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">搜索：</span>
+                        <input type="text" class="filter-input" id="filter-search" placeholder="搜索作品标题、摄影师...">
+                    </div>
+                    <button class="filter-btn" onclick="applyFilters()">
+                        <span>🔍</span>
+                        <span>筛选</span>
+                    </button>
+                    <button class="filter-btn secondary" onclick="resetFilters()">
+                        <span>↺</span>
+                        <span>重置</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 批量操作栏 -->
+            <div class="batch-bar" id="batch-bar">
+                <span class="batch-info">已选择 <strong id="selected-count">0</strong> 个作品</span>
+                <div class="batch-actions">
+                    <button class="batch-btn approve" onclick="batchApprove()">
+                        <span>✓</span>
+                        <span>批量通过</span>
+                    </button>
+                    <button class="batch-btn reject" onclick="batchReject()">
+                        <span>✕</span>
+                        <span>批量拒绝</span>
+                    </button>
+                    <button class="batch-btn cancel" onclick="clearSelection()">
+                        <span>取消选择</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 作品列表 -->
+            <div class="works-grid" id="works-grid">
+                <!-- 动态生成 -->
+            </div>
+            
+            <!-- 空状态 -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <div class="empty-icon">📭</div>
+                <h3 class="empty-title">暂无待审核作品</h3>
+                <p class="empty-desc">当前筛选条件下没有作品，请尝试其他筛选条件</p>
+            </div>
+            
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <!-- 动态生成 -->
+            </div>
+        </main>
+    </div>
+    
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal-content">
+            <img class="modal-image" id="modal-image" src="" alt="">
+            <div class="modal-info">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-title"></h3>
+                    <button class="modal-close" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">摄影师</span>
+                        <span class="meta-value" id="modal-photographer"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">分类</span>
+                        <span class="meta-value" id="modal-category"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">拍摄地点</span>
+                        <span class="meta-value" id="modal-location"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">上传时间</span>
+                        <span class="meta-value" id="modal-time"></span>
+                    </div>
+                </div>
+                <p class="modal-description" id="modal-description"></p>
+                <div class="modal-tags" id="modal-tags"></div>
+                <div class="reject-reason" id="reject-reason-box" style="display: none;">
+                    <label>拒绝原因（可选）：</label>
+                    <textarea id="reject-reason" placeholder="请输入拒绝原因，将反馈给用户..."></textarea>
+                </div>
+                <div class="modal-actions" id="modal-actions">
+                    <button class="modal-btn approve" onclick="modalApprove()">✓ 通过</button>
+                    <button class="modal-btn reject" onclick="modalReject()">✕ 拒绝</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="traffic-gallery/js/config.js"></script>
+    <script src="traffic-gallery/js/database.js"></script>
+    <script src="js/review.js"></script>
+</body>
+</html>

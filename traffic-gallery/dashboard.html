@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 数据可视化大屏 (dashboard.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的数据可视化大屏，提供全面的数据分析和实时监控：
+1. 实时数据监控 - 在线人数、访问量、作品统计
+2. 用户行为分析 - 活跃度趋势、地域分布、设备统计
+3. 内容分析 - 分类分布、热门标签、作品趋势
+4. 系统健康监控 - 服务器状态、响应时间、错误率
+5. 交互式图表 - 支持缩放、筛选、导出
+
+【技术特点】
+- 使用Canvas API绘制图表
+- 实时数据推送（WebSocket模拟）
+- 响应式布局适配
+- 深色主题优化
+- 支持数据导出
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/database.js, js/dashboard.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据可视化大屏 - 交通图库</title>
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 大屏专用样式 -->
+  <style>
+    /* 大屏基础样式 */
+    .dashboard-body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* 大屏头部 */
+    .dashboard-header {
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dashboard-title {
+      font-size: 28px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-time {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.8);
+      font-family: 'Courier New', monospace;
+    }
+
+    /* 大屏主体 */
+    .dashboard-main {
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    /* 数据卡片 */
+    .data-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .data-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+    }
+
+    .data-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .data-card-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .data-card-icon {
+      font-size: 24px;
+      opacity: 0.8;
+    }
+
+    .data-card-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #00d4ff;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .data-card-change {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .data-card-change.up {
+      color: #27ae60;
+    }
+
+    .data-card-change.down {
+      color: #e74c3c;
+    }
+
+    /* 图表容器 */
+    .chart-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 300px;
+    }
+
+    /* 网格布局 */
+    .grid-2 {
+      grid-column: span 2;
+    }
+
+    .grid-3 {
+      grid-column: span 3;
+    }
+
+    .grid-4 {
+      grid-column: span 4;
+    }
+
+    /* 实时数据流 */
+    .realtime-stream {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      max-height: 400px;
+      overflow: hidden;
+    }
+
+    .stream-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .stream-item {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .stream-time {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'Courier New', monospace;
+      min-width: 80px;
+    }
+
+    .stream-content {
+      flex: 1;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .stream-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .stream-badge.upload {
+      background: rgba(39, 174, 96, 0.3);
+      color: #27ae60;
+    }
+
+    .stream-badge.like {
+      background: rgba(231, 76, 60, 0.3);
+      color: #e74c3c;
+    }
+
+    .stream-badge.login {
+      background: rgba(52, 152, 219, 0.3);
+      color: #3498db;
+    }
+
+    /* 地图容器 */
+    .map-container {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      height: 400px;
+      position: relative;
+    }
+
+    .map-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+      border-radius: 12px;
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s ease;
+    }
+
+    /* 响应式 */
+    @media (max-width: 1400px) {
+      .dashboard-main {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .grid-2, .grid-3, .grid-4 {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-main {
+        grid-template-columns: 1fr;
+        padding: 20px;
+      }
+      .grid-2, .grid-3, .grid-4 {
+        grid-column: span 1;
+      }
+      .dashboard-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+    }
+
+    /* 加载动画 */
+    .loading-pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+<body class="dashboard-body">
+  <!-- 大屏头部 -->
+  <header class="dashboard-header">
+    <div class="dashboard-title">📊 交通图库数据可视化大屏</div>
+    <div class="dashboard-time" id="current-time">2026-02-21 00:00:00</div>
+  </header>
+
+  <!-- 大屏主体 -->
+  <main class="dashboard-main">
+    <!-- 核心指标卡片 -->
+    <div class="data-card">
+      <div class="data-card-header">
+        <span class="data-card-title">实时在线用户</span>
+        <span class="data-card-icon">👥</span>
+      </div>
+      <div class="data-card-value" id="online-users">0</div>
+      <div class="data-card-change up">
+        <span>↑</span> <span id="online-change">0%</span> 较上小时
+      </div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-card-header">
+        <span class="data-card-title">今日访问量</span>
+        <span class="data-card-icon">👁️</span>
+      </div>
+      <div class="data-card-value" id="today-visits">0</div>
+      <div class="data-card-change up">
+        <span>↑</span> <span id="visits-change">0%</span> 较昨日
+      </div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-card-header">
+        <span class="data-card-title">作品总数</span>
+        <span class="data-card-icon">📷</span>
+      </div>
+      <div class="data-card-value" id="total-works">0</div>
+      <div class="data-card-change up">
+        <span>↑</span> <span id="works-change">0</span> 今日新增
+      </div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-card-header">
+        <span class="data-card-title">注册用户</span>
+        <span class="data-card-icon">📝</span>
+      </div>
+      <div class="data-card-value" id="total-users">0</div>
+      <div class="data-card-change up">
+        <span>↑</span> <span id="users-change">0</span> 今日新增
+      </div>
+    </div>
+
+    <!-- 访问趋势图 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">📈 24小时访问趋势</h3>
+      <canvas id="visitTrendChart" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- 分类分布图 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">🥧 作品分类分布</h3>
+      <canvas id="categoryChart" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- 用户活跃度热力图 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">🔥 用户活跃时段分布</h3>
+      <canvas id="activityHeatmap" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- 热门标签云 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">🏷️ 热门标签TOP10</h3>
+      <canvas id="tagCloudChart" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- 实时数据流 -->
+    <div class="realtime-stream grid-2">
+      <h3 class="chart-title">⚡ 实时动态</h3>
+      <ul class="stream-list" id="realtime-stream">
+        <!-- 动态生成 -->
+      </ul>
+    </div>
+
+    <!-- 系统健康状态 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">💓 系统健康状态</h3>
+      <div style="padding: 20px 0;">
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>服务器负载</span>
+            <span id="server-load">45%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="server-load-bar" style="width: 45%; background: linear-gradient(90deg, #27ae60, #f39c12);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>内存使用</span>
+            <span id="memory-usage">62%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="memory-usage-bar" style="width: 62%; background: linear-gradient(90deg, #3498db, #9b59b6);"></div>
+          </div>
+        </div>
+        <div style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>数据库连接</span>
+            <span id="db-connections">28/100</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="db-connections-bar" style="width: 28%; background: linear-gradient(90deg, #e74c3c, #f39c12);"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>API响应时间</span>
+            <span id="api-response">45ms</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="api-response-bar" style="width: 15%; background: linear-gradient(90deg, #27ae60, #2ecc71);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设备分布 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">📱 访问设备分布</h3>
+      <canvas id="deviceChart" class="chart-canvas"></canvas>
+    </div>
+
+    <!-- 浏览器分布 -->
+    <div class="chart-container grid-2">
+      <h3 class="chart-title">🌐 浏览器分布</h3>
+      <canvas id="browserChart" class="chart-canvas"></canvas>
+    </div>
+  </main>
+
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

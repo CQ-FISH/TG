@@ -1,0 +1,759 @@
+<!--
+=================================================================================
+交通图库 - 操作日志页面 (log.html)
+=================================================================================
+
+【文件说明】
+本文件是交通图库网站的操作日志页面，主要功能包括：
+
+1. 日志查看：显示系统所有操作日志，包括用户行为和系统事件
+2. 日志筛选：支持按关键词、操作类型和用户筛选日志
+3. 日志分页：对大量日志进行分页展示
+4. 权限控制：仅限管理员访问的页面
+5. 响应式设计：适配不同屏幕尺寸的设备
+6. 日志详情：显示操作类型、内容、IP地址和操作时间
+
+【技术特点】
+- 权限验证：进入页面时验证管理员权限
+- 动态数据加载：从localStorage获取并渲染日志数据
+- 实时筛选：根据用户选择的条件动态过滤日志
+- 分页功能：支持大量日志的分页浏览
+- 数据可视化：通过颜色区分不同类型的操作
+- 响应式布局：使用CSS和媒体查询实现响应式设计
+- 数据模拟：当没有日志数据时生成默认日志
+--><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作日志 - 交通摄影图库</title>
+    <link rel="stylesheet" href="traffic-gallery/css/global.css">
+    <link rel="stylesheet" href="traffic-gallery/css/layout.css">
+    <style>
+        /* 日志页面特有样式 */
+        .log-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .log-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .log-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .log-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .log-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .log-action {
+            font-weight: 500;
+        }
+        
+        .action-login {
+            color: #2196F3;
+        }
+        
+        .action-upload {
+            color: #4CAF50;
+        }
+        
+        .action-comment {
+            color: #FF9800;
+        }
+        
+        .action-like {
+            color: #F44336;
+        }
+        
+        .action-approve {
+            color: #9C27B0;
+        }
+        
+        .action-delete {
+            color: #607D8B;
+        }
+        
+        .action-other {
+            color: #795548;
+        }
+        
+        .log-time {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-ip {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .empty-state h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            color: #666;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            background-color: #e0e0e0;
+        }
+        
+        .page-btn.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .log-container {
+                padding: 10px;
+            }
+            
+            .log-header {
+                padding: 15px;
+            }
+            
+            .log-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .log-content {
+                padding: 20px;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-input {
+                min-width: auto;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+            
+            .filter-btn {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <!-- 品牌标识 -->
+            <a href="traffic-gallery/index.html" class="navbar-brand">
+                <span class="navbar-brand-icon">🚗</span>
+                <span>交通图库</span>
+            </a>
+            
+            <!-- 主导航 -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="traffic-gallery/index.html" class="nav-link">首页</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">分类</a>
+                    <div class="dropdown-menu" id="nav-category-dropdown"></div>
+                </li>
+                <li class="nav-item">
+                    <a href="traffic-gallery/gallery.html" class="nav-link">发现</a>
+                </li>
+                <li class="nav-item">
+                    <a href="traffic-gallery/upload.html" class="nav-link">上传</a>
+                </li>
+                <li class="nav-item" id="login-register-link">
+                    <a href="traffic-gallery/login.html" class="nav-link">登录/注册</a>
+                </li>
+                <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+                    <div class="user-avatar" id="user-avatar">
+                        <span id="username-display"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="profile.html" class="dropdown-item">个人信息</a>
+                        <a href="my.html" class="dropdown-item">我的作品</a>
+                        <a href="admin.html" class="dropdown-item">管理后台</a>
+                        <a href="review.html" class="dropdown-item">作品审核</a>
+                        <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+            
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+                <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="log-container">
+        <div class="log-header">
+            <h1>操作日志</h1>
+            <p>查看系统操作记录和用户行为</p>
+        </div>
+
+        <div class="log-content">
+            <div class="filter-bar">
+                <input type="text" class="filter-input" id="log-search" placeholder="搜索日志内容...">
+                <select class="filter-select" id="log-type">
+                    <option value="all">所有类型</option>
+                    <option value="login">登录</option>
+                    <option value="upload">上传</option>
+                    <option value="comment">评论</option>
+                    <option value="like">点赞</option>
+                    <option value="approve">审核</option>
+                    <option value="delete">删除</option>
+                </select>
+                <select class="filter-select" id="log-user">
+                    <option value="all">所有用户</option>
+                    <!-- 用户选项将通过JS动态加载 -->
+                </select>
+                <button class="filter-btn" id="filter-btn">筛选</button>
+            </div>
+
+            <div class="table-container">
+                <table id="logs-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户</th>
+                            <th>操作类型</th>
+                            <th>操作内容</th>
+                            <th>IP地址</th>
+                            <th>操作时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 日志记录将通过JS动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <h2>暂无日志记录</h2>
+                <p>系统暂无操作日志</p>
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- 分页按钮将通过JS动态生成 -->
+        </div>
+    </main>
+
+    <!-- 返回顶部按钮 -->
+    <div class="back-to-top" id="back-to-top">↑</div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-row">
+                <div class="footer-col">
+                    <h3>关于我们</h3>
+                    <ul class="footer-links">
+                        <li><a href="traffic-gallery/about.html">关于交通图库</a></li>
+                        <li><a href="traffic-gallery/about.html#rules">使用规则</a></li>
+                        <li><a href="traffic-gallery/about.html#contact">联系我们</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="traffic-gallery/gallery.html">最新作品</a></li>
+                        <li><a href="traffic-gallery/gallery.html?sort=popular">热门作品</a></li>
+                        <li><a href="traffic-gallery/upload.html">上传作品</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>帮助中心</h3>
+                    <ul class="footer-links">
+                        <li><a href="traffic-gallery/faq.html">常见问题</a></li>
+                        <li><a href="traffic-gallery/bug.html">提交BUG</a></li>
+                        <li><a href="traffic-gallery/bug-list.html">BUG列表</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 统计信息 -->
+            <div class="footer-stats">
+                <div class="footer-stats-item">
+                    <span class="footer-stats-number" id="online-users">0</span>
+                    <span class="footer-stats-label">在线人数</span>
+                </div>
+                <div class="footer-stats-item">
+                    <span class="footer-stats-number" id="total-visits">0</span>
+                    <span class="footer-stats-label">累计访问</span>
+                </div>
+                <div class="footer-stats-item">
+                    <span class="footer-stats-number" id="registered-users">0</span>
+                    <span class="footer-stats-label">注册用户</span>
+                </div>
+                <div class="footer-stats-item">
+                    <span class="footer-stats-number" id="today-visits">0</span>
+                    <span class="footer-stats-label">今日访问</span>
+                </div>
+            </div>
+            
+            <!-- 版权信息 -->
+            <div class="footer-bottom">
+                <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="traffic-gallery/js/config.js"></script>
+    <script src="traffic-gallery/js/database.js"></script>
+    <script src="traffic-gallery/js/main.js"></script>
+    <script>
+        // 日志页面逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const logsTable = document.getElementById('logs-table').querySelector('tbody');
+            const emptyState = document.getElementById('empty-state');
+            const pagination = document.getElementById('pagination');
+            const logSearch = document.getElementById('log-search');
+            const logType = document.getElementById('log-type');
+            const logUser = document.getElementById('log-user');
+            const filterBtn = document.getElementById('filter-btn');
+            
+            let currentPage = 1;
+            const logsPerPage = 20;
+            let filteredLogs = [];
+            
+            // 初始化页面
+            initLogPage();
+            
+            // 初始化日志页面
+            function initLogPage() {
+                updateUserStatus();
+                checkAdminAccess();
+                loadStats();
+                loadUsers();
+                loadLogs();
+                setupEventListeners();
+            }
+            
+            // 检查管理员访问权限
+            function checkAdminAccess() {
+                const currentUser = getCurrentUser();
+                if (!currentUser || !currentUser.isAdmin) {
+                    alert('您没有权限访问操作日志页面，请先登录管理员账号');
+                    window.location.href = 'login.html';
+                }
+            }
+            
+            // 加载用户列表
+            function loadUsers() {
+                const users = getData('users') || [];
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.username;
+                    logUser.appendChild(option);
+                });
+            }
+            
+            // 设置事件监听器
+            function setupEventListeners() {
+                // 筛选按钮
+                filterBtn.addEventListener('click', function() {
+                    filterLogs();
+                });
+                
+                // 搜索功能
+                document.getElementById('search-btn').addEventListener('click', function() {
+                    const searchTerm = document.getElementById('search-input').value.trim();
+                    if (searchTerm) {
+                        window.location.href = `gallery.html?search=${encodeURIComponent(searchTerm)}`;
+                    }
+                });
+                
+                // 回车键搜索
+                document.getElementById('search-input').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('search-btn').click();
+                    }
+                });
+                
+                // 退出登录
+                document.getElementById('logout-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+                
+                // 返回顶部按钮
+                const backToTopBtn = document.getElementById('back-to-top');
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 300) {
+                        backToTopBtn.style.display = 'block';
+                    } else {
+                        backToTopBtn.style.display = 'none';
+                    }
+                });
+                
+                backToTopBtn.addEventListener('click', function() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+            
+            // 加载日志
+            function loadLogs() {
+                const logs = getLogs();
+                filteredLogs = logs;
+                renderLogs();
+                renderPagination();
+            }
+            
+            // 获取日志数据
+            function getLogs() {
+                // 从localStorage获取日志
+                let logs = getData('logs') || [];
+                
+                // 如果没有日志，生成默认日志
+                if (logs.length === 0) {
+                    logs = generateDefaultLogs();
+                    saveData('logs', logs);
+                }
+                
+                // 按时间倒序排序
+                return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+            
+            // 生成默认日志
+            function generateDefaultLogs() {
+                const users = getData('users') || [];
+                const defaultUsers = users.length > 0 ? users : [
+                    { id: '1', username: 'admin', isAdmin: true },
+                    { id: '2', username: 'user1', isAdmin: false },
+                    { id: '3', username: 'user2', isAdmin: false }
+                ];
+                
+                const actions = [
+                    { type: 'login', content: '用户登录系统' },
+                    { type: 'upload', content: '上传作品' },
+                    { type: 'comment', content: '发表评论' },
+                    { type: 'like', content: '点赞作品' },
+                    { type: 'approve', content: '审核作品' },
+                    { type: 'delete', content: '删除作品' }
+                ];
+                
+                const logs = [];
+                const now = new Date();
+                
+                // 生成最近7天的日志
+                for (let i = 0; i < 100; i++) {
+                    const user = defaultUsers[Math.floor(Math.random() * defaultUsers.length)];
+                    const action = actions[Math.floor(Math.random() * actions.length)];
+                    const timestamp = new Date(now.getTime() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000));
+                    
+                    logs.push({
+                        id: (i + 1).toString(),
+                        userId: user.id,
+                        username: user.username,
+                        action: action.type,
+                        details: action.content + (action.type === 'upload' ? ` ID: ${Math.floor(Math.random() * 100)}` : ''),
+                        timestamp: timestamp.toISOString(),
+                        ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`
+                    });
+                }
+                
+                return logs;
+            }
+            
+            // 筛选日志
+            function filterLogs() {
+                const searchTerm = logSearch.value.toLowerCase().trim();
+                const type = logType.value;
+                const userId = logUser.value;
+                
+                const allLogs = getLogs();
+                filteredLogs = allLogs.filter(log => {
+                    const matchesSearch = log.details.toLowerCase().includes(searchTerm) || log.username.toLowerCase().includes(searchTerm);
+                    const matchesType = type === 'all' || log.action === type;
+                    const matchesUser = userId === 'all' || log.userId === userId;
+                    
+                    return matchesSearch && matchesType && matchesUser;
+                });
+                
+                currentPage = 1;
+                renderLogs();
+                renderPagination();
+            }
+            
+            // 分页日志
+            function paginateLogs(logs, page, perPage) {
+                const start = (page - 1) * perPage;
+                const end = start + perPage;
+                return logs.slice(start, end);
+            }
+            
+            // 渲染日志
+            function renderLogs() {
+                const paginatedLogs = paginateLogs(filteredLogs, currentPage, logsPerPage);
+                logsTable.innerHTML = '';
+                
+                if (paginatedLogs.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                    
+                    paginatedLogs.forEach(log => {
+                        const row = document.createElement('tr');
+                        const actionClass = `action-${log.action}`;
+                        
+                        row.innerHTML = `
+                            <td>${log.id}</td>
+                            <td>${log.username}</td>
+                            <td>
+                                <span class="log-action ${actionClass}">
+                                    ${getActionName(log.action)}
+                                </span>
+                            </td>
+                            <td>${log.details}</td>
+                            <td class="log-ip">${log.ip}</td>
+                            <td class="log-time">${formatDate(log.timestamp)}</td>
+                        `;
+                        
+                        logsTable.appendChild(row);
+                    });
+                }
+            }
+            
+            // 渲染分页
+            function renderPagination() {
+                const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+                pagination.innerHTML = '';
+                
+                if (totalPages <= 1) {
+                    return;
+                }
+                
+                // 上一页按钮
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn';
+                prevBtn.textContent = '上一页';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderLogs();
+                        renderPagination();
+                    }
+                });
+                pagination.appendChild(prevBtn);
+                
+                // 页码按钮
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', function() {
+                        currentPage = i;
+                        renderLogs();
+                        renderPagination();
+                    });
+                    pagination.appendChild(pageBtn);
+                }
+                
+                // 下一页按钮
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn';
+                nextBtn.textContent = '下一页';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.addEventListener('click', function() {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderLogs();
+                        renderPagination();
+                    }
+                });
+                pagination.appendChild(nextBtn);
+            }
+            
+            // 获取操作名称
+            function getActionName(action) {
+                const actionNames = {
+                    'login': '登录',
+                    'upload': '上传',
+                    'comment': '评论',
+                    'like': '点赞',
+                    'approve': '审核',
+                    'delete': '删除'
+                };
+                return actionNames[action] || '其他';
+            }
+            
+            // 格式化日期
+            function formatDate(timestamp) {
+                const date = new Date(timestamp);
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+            
+            // 加载统计信息
+            function loadStats() {
+                const stats = getData('stats') || {
+                    onlineCount: Math.floor(Math.random() * 100) + 1,
+                    totalVisits: Math.floor(Math.random() * 10000) + 1000,
+                    registeredUsers: getData('users') ? getData('users').length : 0,
+                    todayVisits: Math.floor(Math.random() * 500) + 1
+                };
+                
+                document.getElementById('online-count').textContent = stats.onlineCount;
+                document.getElementById('total-visits').textContent = stats.totalVisits;
+                document.getElementById('registered-users').textContent = stats.registeredUsers;
+                document.getElementById('today-visits').textContent = stats.todayVisits;
+            }
+        });
+    </script>
+</body>
+</html>

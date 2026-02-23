@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 先导页面/欢迎页面 (index.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的入口先导页面，主要功能包括：
+
+1. 品牌展示：展示网站Logo和品牌标识
+2. 欢迎动画：精美的入场动画效果
+3. 快速入口：提供进入主站、登录、注册等快捷入口
+4. 版本提示：显示当前版本信息和测试状态
+5. 统计数据预览：展示网站实时统计数据
+6. 特色介绍：简要介绍网站核心功能和特色
+
+【页面结构】
+- 加载动画：页面加载时的过渡动画
+- 品牌展示区：大Logo和网站名称展示
+- 欢迎语：动态打字机效果的欢迎文字
+- 快速入口：进入网站、登录、注册按钮
+- 统计预览：在线人数、作品数量等数据
+- 特色功能：六大分类的快速预览
+- 版本提示：Alpha版本测试提示
+
+【技术特点】
+- 全屏布局设计，视觉冲击力强
+- CSS3动画和过渡效果
+- 打字机效果的文字动画
+- 响应式设计，适配各种屏幕
+- 自动跳转功能（可选）
+
+【依赖文件】
+- 无外部依赖，纯HTML+CSS+JS实现
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>欢迎使用 - 交通图库</title>
+  <meta name="description" content="交通图库是一个全品类交通摄影作品分享平台，涵盖铁路、航空、陆运、水运、特殊交通等多个领域的摄影作品。">
+  <style>
+    /* ==================== 基础重置 ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ==================== 页面容器 ==================== */
+    .landing-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    /* 背景动画 */
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* 装饰性背景元素 */
+    .bg-shapes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .shape {
+      position: absolute;
+      opacity: 0.1;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    .shape-1 {
+      top: 10%;
+      left: 10%;
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      animation-delay: 0s;
+    }
+
+    .shape-2 {
+      top: 20%;
+      right: 15%;
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+      animation-delay: 2s;
+    }
+
+    .shape-3 {
+      bottom: 20%;
+      left: 15%;
+      width: 100px;
+      height: 100px;
+      background: white;
+      transform: rotate(45deg);
+      animation-delay: 4s;
+    }
+
+    .shape-4 {
+      bottom: 10%;
+      right: 10%;
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      animation-delay: 6s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(10deg); }
+    }
+
+    /* ==================== 主要内容区 ==================== */
+    .content-wrapper {
+      text-align: center;
+      z-index: 10;
+      max-width: 800px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 品牌Logo */
+    .brand-logo {
+      font-size: 6rem;
+      margin-bottom: 20px;
+      animation: bounce 2s ease infinite;
+      display: inline-block;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* 网站标题 */
+    .site-title {
+      font-size: 3rem;
+      color: white;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .site-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 30px;
+    }
+
+    /* 打字机效果文字 */
+    .typewriter {
+      font-size: 1.5rem;
+      color: white;
+      margin-bottom: 40px;
+      min-height: 2em;
+    }
+
+    .typewriter-text {
+      border-right: 3px solid white;
+      padding-right: 5px;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+
+    /* ==================== 快速入口按钮 ==================== */
+    .action-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .btn {
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      color: #667eea;
+    }
+
+    /* ==================== 统计预览区 ==================== */
+    .stats-preview {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      color: white;
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* ==================== 特色功能展示 ==================== */
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .feature-item {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      color: white;
+      min-width: 120px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-item:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.25);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .feature-name {
+      font-size: 0.9rem;
+    }
+
+    /* ==================== 版本提示 ==================== */
+    .version-notice {
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      padding: 20px 30px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .version-notice h3 {
+      color: #e74c3c;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .version-notice p {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .bug-report-btn {
+      display: inline-block;
+      padding: 8px 20px;
+      background: #e74c3c;
+      color: white;
+      text-decoration: none;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: background 0.3s ease;
+    }
+
+    .bug-report-btn:hover {
+      background: #c0392b;
+    }
+
+    /* ==================== 页脚 ==================== */
+    .landing-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+    }
+
+    /* ==================== 加载动画 ==================== */
+    .loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-content {
+      text-align: center;
+      color: white;
+    }
+
+    .loader-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ==================== 响应式设计 ==================== */
+    @media (max-width: 768px) {
+      .site-title {
+        font-size: 2rem;
+      }
+
+      .site-subtitle {
+        font-size: 1rem;
+      }
+
+      .typewriter {
+        font-size: 1.1rem;
+      }
+
+      .brand-logo {
+        font-size: 4rem;
+      }
+
+      .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stats-preview {
+        gap: 20px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+      }
+
+      .features {
+        gap: 15px;
+      }
+
+      .feature-item {
+        min-width: 100px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 加载动画 -->
+  <div class="loader" id="loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <p>正在加载...</p>
+    </div>
+  </div>
+
+  <!-- 主页面 -->
+  <div class="landing-page">
+    <!-- 背景装饰 -->
+    <div class="bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+      <div class="shape shape-4"></div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-wrapper">
+      <!-- 品牌Logo -->
+      <div class="brand-logo">🚄</div>
+
+      <!-- 网站标题 -->
+      <h1 class="site-title">交通图库</h1>
+      <p class="site-subtitle">全品类交通摄影作品分享平台</p>
+
+      <!-- 打字机欢迎语 -->
+      <div class="typewriter">
+        <span class="typewriter-text" id="typewriter-text"></span>
+      </div>
+
+      <!-- 快速入口按钮 -->
+      <div class="action-buttons">
+        <a href="traffic-gallery/index.html" class="btn btn-primary">进入网站</a>
+        <a href="traffic-gallery/login.html" class="btn btn-secondary">登录 / 注册</a>
+      </div>
+      <!-- 特色功能 -->
+      <div class="features">
+        <div class="feature-item">
+          <span class="feature-icon">🚄</span>
+          <span class="feature-name">铁路摄影</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">✈️</span>
+          <span class="feature-name">航空摄影</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🚌</span>
+          <span class="feature-name">陆运摄影</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🚢</span>
+          <span class="feature-name">水运摄影</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🚡</span>
+          <span class="feature-name">特殊交通</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📷</span>
+          <span class="feature-name">风景人文</span>
+        </div>
+      </div>
+      <table>
+        <th>常用快捷键</th>
+        <th>功能</th>
+        <tr>
+          <td>?</td>
+          <td>显示快捷键帮助</td>
+        </tr>
+        <tr>
+          <td>/</td>
+          <td>聚焦搜索框</td>
+        </tr>
+        <tr>
+          <td>t</td>
+          <td>切换主题</td>
+        </tr>
+        <tr>
+          <td>g + g</td>
+          <td>跳转到画廊</td>
+        </tr>
+        <tr>
+          <td>j/k</td>
+          <td>下/上一张作品</td>
+        </tr>
+        <tr>
+          <td>l/f</td>
+          <td>点赞/收藏</td>
+        </tr>
+      </table>
+      <a href="1B/index.html">站长blog</a>
+
+      <!-- 版本提示 -->
+      <div class="version-notice">
+        <h3>⚠️ V1.0.0-α-alpha 测试版本</h3>
+        <p>当前版本处于测试阶段，可能存在不稳定因素。如遇问题请及时反馈，帮助我们改进产品。</p>
+        <a href="traffic-gallery/bug.html" class="bug-report-btn">🐛 提交BUG反馈</a>
+      </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="landing-footer">
+      <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台</p>
+    </footer>
+  </div>
+
+  <script>
+    // ==================== 页面加载动画 ====================
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('loader').classList.add('hidden');
+      }, 800);
+    });
+
+    // ==================== 打字机效果 ====================
+    const texts = [
+      '记录交通之美',
+      '分享精彩瞬间',
+      '发现不一样的旅程',
+      '加入我们的社区',
+      'Traffic Gallery 交通图库'
+    ];
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const typewriterElement = document.getElementById('typewriter-text');
+
+    function typeWriter() {
+      const currentText = texts[textIndex];
+
+      if (isDeleting) {
+        typewriterElement.textContent = currentText.substring(0, charIndex - 1);
+        charIndex--;
+      } else {
+        typewriterElement.textContent = currentText.substring(0, charIndex + 1);
+        charIndex++;
+      }
+
+      let typeSpeed = isDeleting ? 50 : 100;
+
+      if (!isDeleting && charIndex === currentText.length) {
+        typeSpeed = 2000; // 暂停2秒
+        isDeleting = true;
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        textIndex = (textIndex + 1) % texts.length;
+        typeSpeed = 500;
+      }
+
+      setTimeout(typeWriter, typeSpeed);
+    }
+
+    // 启动打字机效果
+    setTimeout(typeWriter, 1000);
+
+    // ==================== 动态更新在线人数 ====================
+    function updateOnlineCount() {
+      // 模拟在线人数变化（实际项目中可从服务器获取）
+      const baseCount = 12;
+      const variation = Math.floor(Math.random() * 8) - 4;
+      const count = baseCount + variation;
+      document.getElementById('stat-online').textContent = count;
+    }
+
+    // 初始更新
+    updateOnlineCount();
+    // 每5秒更新一次
+    setInterval(updateOnlineCount, 5000);
+
+    // ==================== 数字动画效果 ====================
+    function animateNumber(elementId, targetValue) {
+      const element = document.getElementById(elementId);
+      const text = element.textContent;
+      const numericPart = parseInt(text.replace(/[^0-9]/g, ''));
+      
+      if (isNaN(numericPart)) return;
+
+      let current = 0;
+      const increment = numericPart / 50;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= numericPart) {
+          current = numericPart;
+          clearInterval(timer);
+        }
+        element.textContent = Math.floor(current).toLocaleString() + text.replace(/[0-9,]/g, '');
+      }, 30);
+    }
+
+    // 页面加载完成后启动数字动画
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        animateNumber('stat-works', 2000);
+        animateNumber('stat-users', 500);
+      }, 1500);
+    });
+
+    // ==================== 键盘快捷键 ====================
+    document.addEventListener('keydown', function(e) {
+      // 按 Enter 键进入网站
+      if (e.key === 'Enter') {
+        window.location.href = 'traffic-gallery/index.html';
+      }
+      // 按 L 键跳转到登录
+      if (e.key === 'l' || e.key === 'L') {
+        window.location.href = 'traffic-gallery/login.html';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 用户认证测试页面 (auth-test.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的用户认证测试页面，用于验证新的密钥绑定验证机制。
+
+【测试内容】
+1. 管理员账号登录测试
+2. 新用户注册测试
+3. 密钥验证测试
+4. 登录失败锁定测试
+5. 密钥重置功能测试
+
+【技术特点】
+- 独立的测试页面，不影响主系统
+- 提供完整的测试用例
+- 实时显示测试结果
+- 支持一键重置测试数据
+
+【依赖文件】
+- JS文件：js/config.js, js/data.js, js/auth.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户认证测试 - 交通图库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        .test-case {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-case h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .test-case p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .key-display {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin: 10px 0;
+            border: 2px dashed #4CAF50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔐 用户认证测试</h1>
+        <p>测试新的用户绑定密钥验证机制</p>
+    </header>
+    
+    <div class="container">
+        <div class="info-box">
+            <h3>📋 测试说明</h3>
+            <p>本页面用于测试新的认证系统，包含以下功能：</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>用户名 + 密码 + 绑定密钥 三重验证</li>
+                <li>注册时自动生成绑定密钥</li>
+                <li>登录失败5次后锁定30分钟</li>
+                <li>管理员预设账号：admin / admin123</li>
+            </ul>
+        </div>
+
+        <!-- 管理员登录测试 -->
+        <div class="test-section">
+            <h2>1. 管理员登录测试</h2>
+            <div class="test-case">
+                <h4>测试用例：管理员账号</h4>
+                <p>用户名：admin</p>
+                <p>密码：admin123</p>
+                <p>密钥：ADMIN_SECRET_KEY_2026_TRAFFIC_GALLERY</p>
+            </div>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="admin-username" value="admin" readonly>
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="admin-password" placeholder="请输入密码">
+            </div>
+            <div class="form-group">
+                <label>绑定密钥</label>
+                <input type="text" id="admin-secret-key" placeholder="请输入绑定密钥">
+            </div>
+            <button class="btn btn-primary" onclick="testAdminLogin()">测试管理员登录</button>
+            <div id="admin-result" class="result-box"></div>
+        </div>
+
+        <!-- 新用户注册测试 -->
+        <div class="test-section">
+            <h2>2. 新用户注册测试</h2>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="reg-username" placeholder="请输入用户名（3-20个字符）">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="reg-password" placeholder="请输入密码（6-20个字符）">
+            </div>
+            <div class="form-group">
+                <label>确认密码</label>
+                <input type="password" id="reg-confirm-password" placeholder="请确认密码">
+            </div>
+            <button class="btn btn-primary" onclick="testRegister()">测试注册</button>
+            <div id="reg-result" class="result-box"></div>
+            <div id="reg-secret-key" class="key-display" style="display: none;"></div>
+        </div>
+
+        <!-- 普通用户登录测试 -->
+        <div class="test-section">
+            <h2>3. 普通用户登录测试</h2>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="user-username" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="user-password" placeholder="请输入密码">
+            </div>
+            <div class="form-group">
+                <label>绑定密钥</label>
+                <input type="text" id="user-secret-key" placeholder="请输入绑定密钥">
+            </div>
+            <button class="btn btn-primary" onclick="testUserLogin()">测试用户登录</button>
+            <div id="user-result" class="result-box"></div>
+        </div>
+
+        <!-- 查看用户列表 -->
+        <div class="test-section">
+            <h2>4. 查看已注册用户</h2>
+            <button class="btn btn-secondary" onclick="showUserList()">刷新用户列表</button>
+            <button class="btn btn-danger" onclick="clearAllData()">清空所有测试数据</button>
+            <div id="user-list-container" style="margin-top: 15px;">
+                <table id="user-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>是否管理员</th>
+                            <th>创建时间</th>
+                            <th>最后登录</th>
+                            <th>登录失败次数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body"></tbody>
+                </table>
+                <p id="no-users-msg" style="text-align: center; color: #666; margin-top: 20px;">暂无注册用户</p>
+            </div>
+        </div>
+
+        <!-- 当前登录状态 -->
+        <div class="test-section">
+            <h2>5. 当前登录状态</h2>
+            <div id="login-status" class="result-info" style="display: block;">
+                <p>当前状态：未登录</p>
+            </div>
+            <button class="btn btn-secondary" onclick="checkLoginStatus()">刷新状态</button>
+            <button class="btn btn-danger" onclick="logout()" style="display: none;" id="logout-btn">退出登录</button>
+        </div>
+    </div>
+
+    <!-- 引入核心脚本 -->
+    <script src="js/config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            showUserList();
+        });
+
+        // 显示结果
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result-box result-' + type;
+            element.style.display = 'block';
+        }
+
+        // 测试管理员登录
+        function testAdminLogin() {
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+            const secretKey = document.getElementById('admin-secret-key').value;
+
+            if (!password || !secretKey) {
+                showResult('admin-result', '请输入密码和密钥', 'error');
+                return;
+            }
+
+            const result = userLoginWithSecretKey(username, password, secretKey);
+            
+            if (result.success) {
+                showResult('admin-result', '✅ ' + result.message + '（管理员账号）', 'success');
+                checkLoginStatus();
+            } else {
+                showResult('admin-result', '❌ ' + result.message, 'error');
+            }
+        }
+
+        // 测试注册
+        function testRegister() {
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+
+            const result = userRegisterWithSecretKey(username, password, confirmPassword);
+            
+            if (result.success) {
+                showResult('reg-result', '✅ ' + result.message, 'success');
+                document.getElementById('reg-secret-key').textContent = '您的密钥：' + result.secretKey;
+                document.getElementById('reg-secret-key').style.display = 'block';
+                showUserList();
+            } else {
+                showResult('reg-result', '❌ ' + result.message, 'error');
+                document.getElementById('reg-secret-key').style.display = 'none';
+            }
+        }
+
+        // 测试普通用户登录
+        function testUserLogin() {
+            const username = document.getElementById('user-username').value.trim();
+            const password = document.getElementById('user-password').value;
+            const secretKey = document.getElementById('user-secret-key').value.trim();
+
+            if (!username || !password || !secretKey) {
+                showResult('user-result', '请填写所有字段', 'error');
+                return;
+            }
+
+            const result = userLoginWithSecretKey(username, password, secretKey);
+            
+            if (result.success) {
+                showResult('user-result', '✅ ' + result.message, 'success');
+                checkLoginStatus();
+                showUserList();
+            } else {
+                showResult('user-result', '❌ ' + result.message, 'error');
+            }
+        }
+
+        // 显示用户列表
+        function showUserList() {
+            const users = getAllUsers();
+            const table = document.getElementById('user-table');
+            const tbody = document.getElementById('user-table-body');
+            const noUsersMsg = document.getElementById('no-users-msg');
+
+            if (users.length === 0) {
+                table.style.display = 'none';
+                noUsersMsg.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            noUsersMsg.style.display = 'none';
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.isAdmin ? '✅ 是' : '❌ 否'}</td>
+                    <td>${new Date(user.createdAt).toLocaleString()}</td>
+                    <td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '从未登录'}</td>
+                    <td>${user.loginAttempts || 0}</td>
+                `;
+            });
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const user = getCurrentUser();
+            const statusDiv = document.getElementById('login-status');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (user && user !== 'null') {
+                statusDiv.innerHTML = `
+                    <p><strong>✅ 已登录</strong></p>
+                    <p>用户名：${user.username}</p>
+                    <p>是否管理员：${user.isAdmin ? '是' : '否'}</p>
+                    <p>登录时间：${new Date(user.loginTime).toLocaleString()}</p>
+                `;
+                logoutBtn.style.display = 'inline-block';
+            } else {
+                statusDiv.innerHTML = '<p>当前状态：未登录</p>';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            userLogout();
+            checkLoginStatus();
+            alert('已退出登录');
+        }
+
+        // 清空所有测试数据
+        function clearAllData() {
+            if (confirm('确定要清空所有用户数据吗？此操作不可恢复！')) {
+                localStorage.removeItem(GLOBAL_CONST.STORAGE_USERS_KEY);
+                localStorage.removeItem(GLOBAL_CONST.STORAGE_SECRET_KEY);
+                localStorage.removeItem(GLOBAL_CONST.STORAGE_USER_KEY);
+                alert('所有数据已清空');
+                showUserList();
+                checkLoginStatus();
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

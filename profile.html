@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 个人中心页面 (profile.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的个人中心页面，采用现代化设计风格：
+- 参考南孚官网的专业简洁风格
+- 参考B站的年轻化卡片设计
+- 优化导航入口，快速访问各功能模块
+- 实时数据展示，个人成就可视化
+
+【主要功能】
+1. 个人资料：头像、昵称、简介编辑
+2. 作品管理：快速访问我的作品
+3. 数据统计：作品数量、获赞数、浏览量
+4. 快捷入口：上传作品、审核状态、消息通知
+5. 账户设置：密码修改、隐私设置
+6. 最近活动：操作历史记录
+
+【页面结构】
+- 顶部用户信息卡片
+- 统计数据面板
+- 快捷功能入口
+- 个人资料编辑
+- 最近活动列表
+- 账户安全设置
+
+【技术特点】
+- 响应式设计，完美适配移动端
+- 卡片式布局，信息层次清晰
+- 流畅的动画过渡效果
+- 实时数据更新
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v2.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 交通图库</title>
+    <meta name="description" content="交通图库个人中心，管理个人资料、作品和账户设置。">
+    
+    <!-- 全局样式 -->
+    <link rel="stylesheet" href="traffic-gallery/css/global.css">
+    <link rel="stylesheet" href="traffic-gallery/css/layout.css">
+    
+    <!-- 页面专用样式 -->
+    <style>
+        /* ========================================
+           页面整体布局
+           ======================================== */
+        .profile-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            padding-bottom: 60px;
+        }
+        
+        /* ========================================
+           顶部用户信息卡片
+           ======================================== */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 0 100px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .profile-header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .profile-avatar-wrap {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+        }
+        
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .avatar-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .avatar-edit-btn:hover {
+            transform: scale(1.1);
+            background: #f0f0f0;
+        }
+        
+        .profile-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .profile-bio {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* ========================================
+           主内容区
+           ======================================== */
+        .profile-main {
+            max-width: 1200px;
+            margin: -60px auto 0;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 992px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ========================================
+           左侧边栏
+           ======================================== */
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* 统计卡片 */
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        /* 快捷入口 */
+        .quick-links-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #555;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+        
+        .quick-link:last-child {
+            margin-bottom: 0;
+        }
+        
+        .quick-link:hover {
+            background: #f0f4ff;
+            color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .quick-link-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .quick-link-text {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .quick-link-arrow {
+            color: #999;
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-link:hover .quick-link-arrow {
+            transform: translateX(5px);
+            color: #667eea;
+        }
+        
+        /* ========================================
+           右侧内容区
+           ======================================== */
+        .profile-content {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .card-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 表单样式 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 5px;
+        }
+        
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        
+        @media (max-width: 768px) {
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 6px;
+        }
+        
+        /* 按钮 */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        /* 最近活动 */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.upload {
+            background: #e3f2fd;
+        }
+        
+        .activity-icon.approve {
+            background: #e8f5e9;
+        }
+        
+        .activity-icon.like {
+            background: #fce4ec;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+        
+        .activity-time {
+            font-size: 0.85rem;
+            color: #999;
+        }
+        
+        /* 安全设置 */
+        .security-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .security-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .security-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .security-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .security-text h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .security-text p {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .security-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.safe {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        
+        .status-badge.warning {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .profile-header {
+                padding: 40px 20px 80px;
+            }
+            
+            .profile-name {
+                font-size: 1.5rem;
+            }
+            
+            .profile-main {
+                margin-top: -40px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .security-item {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .security-info {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="traffic-gallery/index.html" class="navbar-brand">
+                <span class="navbar-brand-icon">🚗</span>
+                <span>交通图库</span>
+            </a>
+            
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="traffic-gallery/index.html" class="nav-link">首页</a>
+                </li>
+                <li class="nav-item">
+                    <a href="traffic-gallery/gallery.html" class="nav-link">发现</a>
+                </li>
+                <li class="nav-item">
+                    <a href="traffic-gallery/upload.html" class="nav-link">上传</a>
+                </li>
+                <li class="nav-item dropdown user-dropdown" id="user-dropdown">
+                    <div class="user-avatar" id="user-avatar">
+                        <span id="username-display">用户</span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="profile.html" class="dropdown-item active">个人中心</a>
+                        <a href="my.html" class="dropdown-item">我的作品</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 页面主体 -->
+    <div class="profile-page">
+        <!-- 顶部用户信息 -->
+        <header class="profile-header">
+            <div class="profile-header-content">
+                <div class="profile-avatar-wrap">
+                    <img class="profile-avatar" id="user-avatar-img" src="https://via.placeholder.com/120" alt="用户头像">
+                    <button class="avatar-edit-btn" onclick="changeAvatar()" title="更换头像">📷</button>
+                </div>
+                <h1 class="profile-name" id="user-name">摄影爱好者</h1>
+                <p class="profile-bio" id="user-bio">用镜头记录交通之美，分享精彩瞬间</p>
+            </div>
+        </header>
+        
+        <!-- 主内容区 -->
+        <main class="profile-main">
+            <div class="profile-grid">
+                <!-- 左侧边栏 -->
+                <aside class="profile-sidebar">
+                    <!-- 统计数据 -->
+                    <div class="stats-card">
+                        <h3 class="card-title">📊 数据统计</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-works">0</div>
+                                <div class="stat-label">作品</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-likes">0</div>
+                                <div class="stat-label">获赞</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-views">0</div>
+                                <div class="stat-label">浏览</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="stat-fans">0</div>
+                                <div class="stat-label">粉丝</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快捷入口 -->
+                    <div class="quick-links-card">
+                        <h3 class="card-title">🚀 快捷入口</h3>
+                        <a href="traffic-gallery/upload.html" class="quick-link">
+                            <div class="quick-link-icon">⬆️</div>
+                            <span class="quick-link-text">上传作品</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                        <a href="my.html" class="quick-link">
+                            <div class="quick-link-icon">🖼️</div>
+                            <span class="quick-link-text">我的作品</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                        <a href="review.html" class="quick-link" id="admin-review-link" style="display: none;">
+                            <div class="quick-link-icon">✅</div>
+                            <span class="quick-link-text">作品审核</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                        <a href="admin.html" class="quick-link" id="admin-dashboard-link" style="display: none;">
+                            <div class="quick-link-icon">⚙️</div>
+                            <span class="quick-link-text">管理后台</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                        <a href="announcement.html" class="quick-link">
+                            <div class="quick-link-icon">📢</div>
+                            <span class="quick-link-text">公告管理</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                        <a href="log.html" class="quick-link">
+                            <div class="quick-link-icon">📋</div>
+                            <span class="quick-link-text">操作日志</span>
+                            <span class="quick-link-arrow">→</span>
+                        </a>
+                    </div>
+                </aside>
+                
+                <!-- 右侧内容 -->
+                <div class="profile-content">
+                    <!-- 个人资料 -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>📝 个人资料</h3>
+                        </div>
+                        <form id="profile-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">昵称</label>
+                                    <input type="text" class="form-input" id="nickname" placeholder="请输入昵称">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">真实姓名</label>
+                                    <input type="text" class="form-input" id="realname" placeholder="请输入真实姓名">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">邮箱</label>
+                                    <input type="email" class="form-input" id="email" placeholder="请输入邮箱">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">手机号</label>
+                                    <input type="tel" class="form-input" id="phone" placeholder="请输入手机号">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">个人简介</label>
+                                    <textarea class="form-textarea" id="bio" placeholder="介绍一下你自己..."></textarea>
+                                    <p class="form-hint">最多 200 个字符</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">所在城市</label>
+                                    <input type="text" class="form-input" id="city" placeholder="例如：北京">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">职业</label>
+                                    <select class="form-select" id="occupation">
+                                        <option value="">请选择</option>
+                                        <option value="student">学生</option>
+                                        <option value="photographer">摄影师</option>
+                                        <option value="enthusiast">摄影爱好者</option>
+                                        <option value="professional">交通行业从业者</option>
+                                        <option value="other">其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">重置</button>
+                                <button type="button" class="btn btn-primary" onclick="saveProfile()">💾 保存修改</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- 最近活动 -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>🔔 最近活动</h3>
+                            <a href="log.html" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">查看全部 →</a>
+                        </div>
+                        <div class="activity-list" id="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon upload">⬆️</div>
+                                <div class="activity-content">
+                                    <p class="activity-text">上传了作品 <strong>《高铁穿越花海》</strong></p>
+                                    <span class="activity-time">2小时前</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon approve">✅</div>
+                                <div class="activity-content">
+                                    <p class="activity-text">作品 <strong>《地铁夜景》</strong> 已通过审核</p>
+                                    <span class="activity-time">昨天</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon like">❤️</div>
+                                <div class="activity-content">
+                                    <p class="activity-text">收到了 15 个赞</p>
+                                    <span class="activity-time">3天前</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 账户安全 -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>🔒 账户安全</h3>
+                        </div>
+                        <div class="security-list">
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <div class="security-icon">🔐</div>
+                                    <div class="security-text">
+                                        <h4>登录密码</h4>
+                                        <p>建议定期更换密码以保护账户安全</p>
+                                    </div>
+                                </div>
+                                <div class="security-status">
+                                    <span class="status-badge safe">已设置</span>
+                                    <button class="btn btn-secondary" onclick="changePassword()">修改</button>
+                                </div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <div class="security-icon">📱</div>
+                                    <div class="security-text">
+                                        <h4>手机绑定</h4>
+                                        <p>绑定手机可用于登录和找回密码</p>
+                                    </div>
+                                </div>
+                                <div class="security-status">
+                                    <span class="status-badge warning">未绑定</span>
+                                    <button class="btn btn-primary" onclick="bindPhone()">去绑定</button>
+                                </div>
+                            </div>
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <div class="security-icon">✉️</div>
+                                    <div class="security-text">
+                                        <h4>邮箱绑定</h4>
+                                        <p>绑定邮箱可用于接收通知和找回密码</p>
+                                    </div>
+                                </div>
+                                <div class="security-status">
+                                    <span class="status-badge safe">已绑定</span>
+                                    <button class="btn btn-secondary" onclick="bindEmail()">更换</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="traffic-gallery/js/config.js"></script>
+    <script src="traffic-gallery/js/database.js"></script>
+    <script src="traffic-gallery/js/main.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

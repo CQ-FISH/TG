@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 404错误页面 (404.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的404错误页面，主要功能包括：
+
+1. 错误提示：向用户显示页面不存在的错误信息
+2. 导航选项：提供返回首页和浏览作品的快捷链接
+3. 品牌一致性：保持与其他页面一致的导航栏和页脚
+4. 友好提示：使用清晰的错误信息，减轻用户的困惑
+
+【页面结构】
+- 导航栏：与其他页面保持一致的导航结构
+- 错误信息：显示404错误代码和"页面不存在"提示
+- 错误描述：说明页面不存在或已被删除的原因
+- 操作按钮：提供返回首页和浏览作品的按钮
+- 页脚：包含网站链接、统计数据和版权信息
+
+【技术特点】
+- 响应式设计，适配不同屏幕尺寸
+- 友好的错误提示，提升用户体验
+- 清晰的导航选项，帮助用户快速返回正常页面
+- 与整体网站风格一致，保持品牌形象
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/data.js, js/main.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面不存在 - 交通图库</title>
+  <meta name="description" content="交通图库404错误页面，当用户访问不存在的页面时显示。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面内容 -->
+  <main class="content">
+    <!-- 404错误页 -->
+    <section class="error-404">
+      <div class="container">
+        <h1>404</h1>
+        <h2>页面不存在</h2>
+        <p>抱歉，您访问的页面不存在或已被删除。</p>
+        <div class="error-actions">
+          <a href="index.html" class="btn btn-primary">返回首页</a>
+          <a href="gallery.html" class="btn btn-secondary">浏览作品</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="about.html#contact">联系我们</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users"></span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits"></span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users"></span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits"></span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="back-to-top">↑</div>
+</body>
+</html>

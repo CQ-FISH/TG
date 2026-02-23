@@ -1,0 +1,1227 @@
+<!--
+=================================================================================
+交通图库 - 管理员管理中心 (admin.html) v2.0
+=================================================================================
+
+【文件说明】
+本文件是交通图库网站的管理员管理中心v2.0版本，提供完整的管理功能：
+
+1. 仪表盘：实时数据统计和可视化图表
+2. 作品管理：审核、编辑、删除、批量操作
+3. 用户管理：查看、编辑、禁用、角色管理
+4. BUG管理：查看、回复、状态更新
+5. 公告管理：发布、编辑、删除公告
+6. 系统设置：网站配置、参数调整
+7. 操作日志：完整的操作记录和审计
+
+【技术特点】
+- 单页面应用架构，无刷新切换
+- 实时数据更新和推送
+- 响应式设计，支持移动端管理
+- 完整的权限控制
+- 数据导出功能
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v2.0.0
+=================================================================================
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 交通图库</title>
+    <link rel="stylesheet" href="traffic-gallery/css/global.css">
+    <link rel="stylesheet" href="traffic-gallery/css/layout.css">
+    <style>
+        /* 管理后台整体布局 */
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            background: #f5f7fa;
+        }
+        
+        /* 侧边栏 */
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #1a1f37 0%, #252b48 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .sidebar-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 20px;
+        }
+        
+        .nav-section-title {
+            padding: 0 20px 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-left-color: #667eea;
+        }
+        
+        .nav-item-icon {
+            width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .nav-item-badge {
+            margin-left: auto;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        /* 主内容区 */
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航 */
+        .admin-header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .header-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f5f7fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        
+        .header-search input {
+            border: none;
+            background: none;
+            outline: none;
+            flex: 1;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            background: #f5f7fa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .header-btn:hover {
+            background: #e8ecf1;
+        }
+        
+        .header-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .header-user:hover {
+            background: #f5f7fa;
+        }
+        
+        .header-user img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* 内容区 */
+        .admin-content {
+            padding: 30px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .page-header p {
+            color: #888;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+        
+        .stat-icon.blue { background: #e3f2fd; }
+        .stat-icon.green { background: #e8f5e9; }
+        .stat-icon.orange { background: #fff3e0; }
+        .stat-icon.red { background: #ffebee; }
+        .stat-icon.purple { background: #f3e5f5; }
+        .stat-icon.cyan { background: #e0f7fa; }
+        
+        .stat-info h3 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-info p {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .stat-change.up { color: #4CAF50; }
+        .stat-change.down { color: #f44336; }
+        
+        /* 内容卡片 */
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        
+        .card-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f5f7fa;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e8ecf1;
+        }
+        
+        .btn-danger {
+            background: #ffebee;
+            color: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #ffcdd2;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 数据表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .data-table th {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table td {
+            color: #555;
+        }
+        
+        /* 状态标签 */
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .status-badge.approved {
+            background: #e8f5e9;
+            color: #4CAF50;
+        }
+        
+        .status-badge.rejected {
+            background: #ffebee;
+            color: #f44336;
+        }
+        
+        .status-badge.processing {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        /* 操作按钮 */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn.view {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        .action-btn.edit {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+        
+        .action-btn.delete {
+            background: #ffebee;
+            color: #f44336;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 筛选栏 */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: #667eea;
+        }
+        
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+        }
+        
+        .page-btn {
+            padding: 8px 14px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .page-btn:hover:not(:disabled) {
+            background: #f5f7fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .page-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+        
+        /* 页面内容区 */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .admin-main {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-content {
+                padding: 15px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+            }
+            
+            .data-table {
+                font-size: 0.85rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 10px;
+            }
+        }
+        
+        /* 遮罩层 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- 侧边栏遮罩 -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- 侧边栏 -->
+        <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="sidebar-header">
+                <a href="traffic-gallery/index.html" class="sidebar-brand">
+                    <div class="sidebar-brand-icon">🚗</div>
+                    <span>交通图库</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">主菜单</div>
+                    <a class="nav-item active" onclick="switchTab('dashboard')">
+                        <span class="nav-item-icon">📊</span>
+                        <span>仪表盘</span>
+                    </a>
+                    <a class="nav-item" onclick="switchTab('works')">
+                        <span class="nav-item-icon">🖼️</span>
+                        <span>作品管理</span>
+                        <span class="nav-item-badge" id="pending-works-count">0</span>
+                    </a>
+                    <a class="nav-item" onclick="switchTab('users')">
+                        <span class="nav-item-icon">👥</span>
+                        <span>用户管理</span>
+                    </a>
+                    <a class="nav-item" onclick="switchTab('bugs')">
+                        <span class="nav-item-icon">🐛</span>
+                        <span>BUG管理</span>
+                        <span class="nav-item-badge" id="pending-bugs-count">0</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">内容</div>
+                    <a class="nav-item" onclick="switchTab('announcements')">
+                        <span class="nav-item-icon">📢</span>
+                        <span>公告管理</span>
+                    </a>
+                    <a class="nav-item" onclick="switchTab('categories')">
+                        <span class="nav-item-icon">🏷️</span>
+                        <span>分类管理</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">系统</div>
+                    <a class="nav-item" onclick="switchTab('logs')">
+                        <span class="nav-item-icon">📋</span>
+                        <span>操作日志</span>
+                    </a>
+                    <a class="nav-item" onclick="switchTab('settings')">
+                        <span class="nav-item-icon">⚙️</span>
+                        <span>系统设置</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- 主内容区 -->
+        <main class="admin-main">
+            <!-- 顶部导航 -->
+            <header class="admin-header">
+                <button class="header-btn" onclick="toggleSidebar()" style="display: none;" id="menu-toggle">
+                    ☰
+                </button>
+                
+                <div class="header-search">
+                    <span>🔍</span>
+                    <input type="text" placeholder="搜索..." id="global-search">
+                </div>
+                
+                <div class="header-actions">
+                    <button class="header-btn" onclick="refreshData()" title="刷新数据">
+                        🔄
+                    </button>
+                    <button class="header-btn" onclick="showNotifications()" title="通知">
+                        🔔
+                        <span class="badge" id="notification-count">3</span>
+                    </button>
+                    <div class="header-user" onclick="toggleUserMenu()">
+                        <img src="https://via.placeholder.com/36" alt="管理员" id="admin-avatar">
+                        <span id="admin-name">管理员</span>
+                        <span>▼</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 内容区 -->
+            <div class="admin-content">
+                <!-- 仪表盘 -->
+                <div class="tab-content active" id="tab-dashboard">
+                    <div class="page-header">
+                        <h1>仪表盘</h1>
+                        <p>欢迎回来，这是今天的数据概览</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">🖼️</div>
+                            <div class="stat-info">
+                                <h3 id="stat-total-works">0</h3>
+                                <p>总作品数</p>
+                                <span class="stat-change up">↑ 12% 较上月</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">👥</div>
+                            <div class="stat-info">
+                                <h3 id="stat-total-users">0</h3>
+                                <p>总用户数</p>
+                                <span class="stat-change up">↑ 8% 较上月</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">⏳</div>
+                            <div class="stat-info">
+                                <h3 id="stat-pending-works">0</h3>
+                                <p>待审核作品</p>
+                                <span class="stat-change">需要处理</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red">🐛</div>
+                            <div class="stat-info">
+                                <h3 id="stat-pending-bugs">0</h3>
+                                <p>待处理BUG</p>
+                                <span class="stat-change down">↑ 2 个新增</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">👁️</div>
+                            <div class="stat-info">
+                                <h3 id="stat-today-views">0</h3>
+                                <p>今日浏览</p>
+                                <span class="stat-change up">↑ 24% 较昨日</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon cyan">📊</div>
+                            <div class="stat-info">
+                                <h3 id="stat-online-users">0</h3>
+                                <p>在线用户</p>
+                                <span class="stat-change">实时</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>📈 最近活动</h3>
+                            <a href="#" onclick="switchTab('logs')" class="btn btn-secondary">查看全部</a>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>用户</th>
+                                        <th>操作</th>
+                                        <th>详情</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-activity-tbody">
+                                    <tr>
+                                        <td colspan="4" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 作品管理 -->
+                <div class="tab-content" id="tab-works">
+                    <div class="page-header">
+                        <h1>作品管理</h1>
+                        <p>管理所有用户上传的作品</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>作品列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary" onclick="exportWorks()">📥 导出</button>
+                                <button class="btn btn-primary" onclick="batchApprove()">✓ 批量通过</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label>状态：</label>
+                                    <select id="works-filter-status" onchange="loadWorks()">
+                                        <option value="all">全部</option>
+                                        <option value="pending">待审核</option>
+                                        <option value="approved">已通过</option>
+                                        <option value="rejected">已拒绝</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>分类：</label>
+                                    <select id="works-filter-category" onchange="loadWorks()">
+                                        <option value="all">全部分类</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>搜索：</label>
+                                    <input type="text" id="works-filter-search" placeholder="作品标题/作者" onkeyup="debounceLoadWorks()">
+                                </div>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="works-select-all" onchange="toggleSelectAll('works')"></th>
+                                        <th>作品</th>
+                                        <th>作者</th>
+                                        <th>分类</th>
+                                        <th>状态</th>
+                                        <th>上传时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="works-tbody">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination" id="works-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 用户管理 -->
+                <div class="tab-content" id="tab-users">
+                    <div class="page-header">
+                        <h1>用户管理</h1>
+                        <p>管理系统用户和权限</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>用户列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showAddUserModal()">+ 添加用户</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label>角色：</label>
+                                    <select id="users-filter-role" onchange="loadUsers()">
+                                        <option value="all">全部</option>
+                                        <option value="admin">管理员</option>
+                                        <option value="user">普通用户</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>状态：</label>
+                                    <select id="users-filter-status" onchange="loadUsers()">
+                                        <option value="all">全部</option>
+                                        <option value="active">正常</option>
+                                        <option value="disabled">已禁用</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>搜索：</label>
+                                    <input type="text" id="users-filter-search" placeholder="用户名/邮箱" onkeyup="debounceLoadUsers()">
+                                </div>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>用户</th>
+                                        <th>邮箱</th>
+                                        <th>角色</th>
+                                        <th>状态</th>
+                                        <th>注册时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-tbody">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination" id="users-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BUG管理 -->
+                <div class="tab-content" id="tab-bugs">
+                    <div class="page-header">
+                        <h1>BUG管理</h1>
+                        <p>查看和处理用户反馈的问题</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>BUG列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary" onclick="exportBugs()">📥 导出</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label>状态：</label>
+                                    <select id="bugs-filter-status" onchange="loadBugs()">
+                                        <option value="all">全部</option>
+                                        <option value="pending">待处理</option>
+                                        <option value="processing">处理中</option>
+                                        <option value="resolved">已解决</option>
+                                        <option value="rejected">已驳回</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>优先级：</label>
+                                    <select id="bugs-filter-priority" onchange="loadBugs()">
+                                        <option value="all">全部</option>
+                                        <option value="critical">紧急</option>
+                                        <option value="high">高</option>
+                                        <option value="medium">中</option>
+                                        <option value="low">低</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>搜索：</label>
+                                    <input type="text" id="bugs-filter-search" placeholder="BUG标题/提交者" onkeyup="debounceLoadBugs()">
+                                </div>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>标题</th>
+                                        <th>提交者</th>
+                                        <th>优先级</th>
+                                        <th>状态</th>
+                                        <th>提交时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bugs-tbody">
+                                    <tr>
+                                        <td colspan="7" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination" id="bugs-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 公告管理 -->
+                <div class="tab-content" id="tab-announcements">
+                    <div class="page-header">
+                        <h1>公告管理</h1>
+                        <p>发布和管理系统公告</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>公告列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showAddAnnouncementModal()">+ 发布公告</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>标题</th>
+                                        <th>类型</th>
+                                        <th>状态</th>
+                                        <th>发布时间</th>
+                                        <th>浏览量</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="announcements-tbody">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分类管理 -->
+                <div class="tab-content" id="tab-categories">
+                    <div class="page-header">
+                        <h1>分类管理</h1>
+                        <p>管理作品分类和标签</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>分类列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-primary" onclick="showAddCategoryModal()">+ 添加分类</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>图标</th>
+                                        <th>名称</th>
+                                        <th>标识</th>
+                                        <th>作品数</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categories-tbody">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作日志 -->
+                <div class="tab-content" id="tab-logs">
+                    <div class="page-header">
+                        <h1>操作日志</h1>
+                        <p>查看系统操作记录</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>日志列表</h3>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary" onclick="clearLogs()">🗑️ 清空日志</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="filter-bar">
+                                <div class="filter-group">
+                                    <label>类型：</label>
+                                    <select id="logs-filter-type" onchange="loadLogs()">
+                                        <option value="all">全部</option>
+                                        <option value="user">用户</option>
+                                        <option value="work">作品</option>
+                                        <option value="bug">BUG</option>
+                                        <option value="system">系统</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>搜索：</label>
+                                    <input type="text" id="logs-filter-search" placeholder="操作内容" onkeyup="debounceLoadLogs()">
+                                </div>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>用户</th>
+                                        <th>类型</th>
+                                        <th>操作</th>
+                                        <th>详情</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logs-tbody">
+                                    <tr>
+                                        <td colspan="5" class="empty-state">
+                                            <div class="loading-spinner"></div>
+                                            <p>加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="pagination" id="logs-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统设置 -->
+                <div class="tab-content" id="tab-settings">
+                    <div class="page-header">
+                        <h1>系统设置</h1>
+                        <p>配置网站基本参数</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>基本设置</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="settings-form">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">网站名称</label>
+                                        <input type="text" class="form-input" id="site-name" value="交通图库">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">网站描述</label>
+                                        <input type="text" class="form-input" id="site-description" value="全品类交通摄影作品分享平台">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">每页显示数量</label>
+                                        <input type="number" class="form-input" id="page-size" value="12">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">允许上传的最大文件大小(MB)</label>
+                                        <input type="number" class="form-input" id="max-file-size" value="10">
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 保存设置</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="traffic-gallery/js/config.js"></script>
+    <script src="traffic-gallery/js/database.js"></script>
+    <script src="traffic-gallery/js/main.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

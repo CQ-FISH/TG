@@ -1,0 +1,872 @@
+<!--
+=================================================================================
+交通图库 - BUG列表页面 (bug-list.html)
+=================================================================================
+
+【文件说明】
+本文件是交通图库网站的BUG列表页面，主要功能包括：
+
+1. BUG统计：展示不同状态的BUG数量统计
+2. BUG筛选：支持按状态和分类筛选BUG
+3. BUG列表：展示所有用户提交的BUG，包括详细信息
+4. BUG详情：显示BUG标题、描述、截图、提交信息等
+5. 管理员回复：展示管理员对BUG的回复内容
+6. 图片预览：支持BUG截图的点击预览
+7. 分页功能：对大量BUG进行分页展示
+
+【技术特点】
+- 动态数据加载：通过JavaScript从bug.js获取和渲染数据
+- 实时筛选：根据用户选择的条件动态过滤BUG
+- 响应式设计：适配不同屏幕尺寸
+- 图片预览：模态框实现的图片预览功能
+- 数据统计：实时计算和展示BUG状态统计
+- 错误处理：完善的加载状态和错误提示
+--><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUG列表 - 交通图库</title>
+  <meta name="description" content="交通图库BUG列表页面，向所有用户展示已提交的BUG，展示BUG详情，管理员可对其进行回复。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/bug.js"></script>
+  <script src="js/bug-sync.js"></script>
+  <script src="js/main.js"></script>
+  <style>
+    /* BUG列表页面特有样式 */
+    .bug-list-section {
+      padding: 2rem 0;
+    }
+    
+    /* 统计卡片 */
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+    
+    .stat-card.pending {
+      border-top: 3px solid #6c757d;
+    }
+    
+    .stat-card.processing {
+      border-top: 3px solid #ffc107;
+    }
+    
+    .stat-card.resolved {
+      border-top: 3px solid #28a745;
+    }
+    
+    .stat-card.total {
+      border-top: 3px solid #3498db;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .stat-label {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    
+    /* 筛选栏 */
+    .filter-bar {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .filter-label {
+      color: #555;
+      font-weight: 500;
+    }
+    
+    .filter-select {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    
+    .btn-submit-bug {
+      margin-left: auto;
+      padding: 0.5rem 1.5rem;
+      background-color: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-submit-bug:hover {
+      background-color: #c0392b;
+    }
+    
+    /* BUG列表容器 */
+    .bug-list-container {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    /* BUG项 */
+    .bug-item {
+      border-bottom: 1px solid #eee;
+      padding: 1.5rem;
+      transition: background-color 0.3s ease;
+    }
+    
+    .bug-item:last-child {
+      border-bottom: none;
+    }
+    
+    .bug-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .bug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    
+    .bug-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+    
+    .bug-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+    
+    .bug-id {
+      font-size: 0.8rem;
+      color: #95a5a6;
+      font-family: monospace;
+    }
+    
+    .bug-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .badge-status {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    
+    .badge-status.pending {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    
+    .badge-status.processing {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    
+    .badge-status.resolved {
+      background-color: #28a745;
+      color: #fff;
+    }
+    
+    .badge-status.rejected {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    
+    .badge-category {
+      background-color: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .badge-priority {
+      background-color: #fff3e0;
+      color: #f57c00;
+    }
+    
+    .badge-priority.critical {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+    
+    .bug-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: #7f8c8d;
+      margin-bottom: 0.75rem;
+    }
+    
+    .bug-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .bug-description {
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    
+    /* 截图预览 */
+    .bug-screenshots {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    
+    .screenshot-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      transition: transform 0.3s ease;
+    }
+    
+    .screenshot-thumb:hover {
+      transform: scale(1.05);
+    }
+    
+    /* 管理员回复 */
+    .bug-reply {
+      background-color: #f0f8ff;
+      border-left: 4px solid #3498db;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+    
+    .bug-reply-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .bug-reply h4 {
+      margin: 0;
+      color: #3498db;
+      font-size: 0.95rem;
+    }
+    
+    .reply-time {
+      font-size: 0.8rem;
+      color: #95a5a6;
+    }
+    
+    .bug-reply p {
+      margin: 0;
+      line-height: 1.6;
+      color: #555;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #7f8c8d;
+    }
+    
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    
+    .empty-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    
+    /* 加载状态 */
+    .loading-state {
+      text-align: center;
+      padding: 3rem;
+      color: #7f8c8d;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* 错误状态 */
+    .error-state {
+      text-align: center;
+      padding: 3rem;
+      color: #e74c3c;
+    }
+    
+    .error-state button {
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    
+    .pagination button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      background-color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    
+    .pagination button:hover:not(:disabled) {
+      background-color: #f8f9fa;
+      border-color: #3498db;
+    }
+    
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .pagination .page-info {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+    
+    /* 图片预览模态框 */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .image-modal.active {
+      display: flex;
+    }
+    
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    
+    .image-modal .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: #fff;
+      font-size: 40px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="my.html" class="dropdown-item">我的作品</a>
+            <a href="admin.html" class="dropdown-item">管理后台</a>
+            <a href="review.html" class="dropdown-item">作品审核</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 图片预览模态框 -->
+  <div class="image-modal" id="image-modal" onclick="closeImageModal()">
+    <span class="close-btn">&times;</span>
+    <img src="" alt="预览" id="modal-image">
+  </div>
+
+  <!-- 页面内容 -->
+  <main class="content">
+    <!-- 页面标题 -->
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title">BUG列表</h1>
+        <p class="page-subtitle">查看所有用户提交的BUG及处理状态</p>
+      </div>
+    </section>
+
+    <!-- BUG列表 -->
+    <section class="bug-list-section">
+      <div class="container">
+        <!-- 统计卡片 -->
+        <div class="stats-cards" id="stats-cards">
+          <div class="stat-card total">
+            <div class="stat-number" id="stat-total">-</div>
+            <div class="stat-label">全部BUG</div>
+          </div>
+          <div class="stat-card pending">
+            <div class="stat-number" id="stat-pending">-</div>
+            <div class="stat-label">待处理</div>
+          </div>
+          <div class="stat-card processing">
+            <div class="stat-number" id="stat-processing">-</div>
+            <div class="stat-label">处理中</div>
+          </div>
+          <div class="stat-card resolved">
+            <div class="stat-number" id="stat-resolved">-</div>
+            <div class="stat-label">已解决</div>
+          </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <span class="filter-label">状态：</span>
+            <select class="filter-select" id="filter-status" onchange="loadBugList()">
+              <option value="all">全部</option>
+              <option value="pending">待处理</option>
+              <option value="processing">处理中</option>
+              <option value="resolved">已解决</option>
+              <option value="rejected">已驳回</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">分类：</span>
+            <select class="filter-select" id="filter-category" onchange="loadBugList()">
+              <option value="all">全部</option>
+              <option value="frontend">前端显示</option>
+              <option value="function">功能异常</option>
+              <option value="performance">性能问题</option>
+              <option value="security">安全问题</option>
+              <option value="ui">界面设计</option>
+              <option value="data">数据问题</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <a href="bug.html" class="btn-submit-bug">+ 提交新BUG</a>
+        </div>
+
+        <!-- BUG列表容器 -->
+        <div class="bug-list-container" id="bug-list-container">
+          <!-- 加载状态 -->
+          <div class="loading-state" id="loading-state">
+            <div class="loading-spinner"></div>
+            <p>正在加载BUG列表...</p>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" id="pagination" style="display: none;">
+          <button onclick="changePage(-1)" id="prev-btn">上一页</button>
+          <span class="page-info" id="page-info">第 1 页</span>
+          <button onclick="changePage(1)" id="next-btn">下一页</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="about.html#contact">联系我们</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users">0</span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits">0</span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users">0</span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits">0</span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="back-to-top">↑</div>
+
+  <!-- BUG列表脚本 -->
+  <script>
+    // 分页配置
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentBugs = [];
+
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 加载BUG列表
+      loadBugList();
+      
+      // 加载统计数据
+      loadStatistics();
+    });
+    
+    /**
+     * 刷新BUG列表（全局函数，供bug-sync.js调用）
+     * 【说明】当在其他页面提交BUG后，通过此函数刷新当前列表
+     */
+    window.refreshBugList = function() {
+      console.log('[bug-list.html] 刷新BUG列表');
+      loadBugList();
+      loadStatistics();
+    };
+
+    // 加载BUG列表
+    function loadBugList() {
+      const container = document.getElementById('bug-list-container');
+      const loadingState = document.getElementById('loading-state');
+      const pagination = document.getElementById('pagination');
+      
+      // 显示加载状态
+      container.innerHTML = `
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>正在加载BUG列表...</p>
+        </div>
+      `;
+      pagination.style.display = 'none';
+      
+      try {
+        // 获取筛选条件
+        const statusFilter = document.getElementById('filter-status').value;
+        const categoryFilter = document.getElementById('filter-category').value;
+        
+        // 使用同步模块获取数据（优先从localStorage获取最新数据）
+        let bugs = [];
+        if (typeof syncGetAllBugs === 'function') {
+          bugs = syncGetAllBugs();
+        } else {
+          bugs = getAllBugs();
+        }
+        
+        // 应用筛选
+        if (statusFilter !== 'all') {
+          bugs = bugs.filter(bug => bug.status === statusFilter);
+        }
+        if (categoryFilter !== 'all') {
+          bugs = bugs.filter(bug => bug.category === categoryFilter);
+        }
+        
+        // 保存当前BUG列表
+        currentBugs = bugs;
+        
+        // 计算分页
+        totalPages = Math.ceil(bugs.length / PAGE_SIZE) || 1;
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+        
+        // 获取当前页数据
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        const pageBugs = bugs.slice(start, end);
+        
+        // 渲染BUG列表
+        if (pageBugs.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">🐛</div>
+              <div class="empty-title">暂无BUG记录</div>
+              <p>当前筛选条件下没有BUG，或者还没有人提交BUG</p>
+              <a href="bug.html" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1.5rem; background-color: #e74c3c; color: #fff; border-radius: 4px; text-decoration: none;">提交新BUG</a>
+            </div>
+          `;
+        } else {
+          container.innerHTML = pageBugs.map(bug => renderBugItem(bug)).join('');
+          
+          // 显示分页
+          updatePagination();
+          pagination.style.display = 'flex';
+        }
+        
+        // 更新统计数据
+        loadStatistics();
+        
+      } catch (error) {
+        console.error('加载BUG列表失败:', error);
+        container.innerHTML = `
+          <div class="error-state">
+            <div class="empty-icon">⚠️</div>
+            <div class="empty-title">加载失败</div>
+            <p>无法加载BUG列表，请稍后重试</p>
+            <button onclick="loadBugList()">重新加载</button>
+          </div>
+        `;
+      }
+    }
+
+    // 渲染单个BUG项
+    function renderBugItem(bug) {
+      const statusDisplay = getStatusDisplay(bug.status);
+      const categoryDisplay = getCategoryDisplay(bug.category);
+      const priorityDisplay = getPriorityDisplay(bug.priority);
+      const submitTime = formatBugTime(bug.submitTime);
+      
+      // 截图预览
+      let screenshotsHtml = '';
+      if (bug.screenshots && bug.screenshots.length > 0) {
+        screenshotsHtml = `
+          <div class="bug-screenshots">
+            ${bug.screenshots.map((screenshot, index) => `
+              <img src="${screenshot.data}" alt="截图${index + 1}" class="screenshot-thumb" onclick="openImageModal('${screenshot.data}')">
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      // 管理员回复
+      let replyHtml = '';
+      if (bug.replies && bug.replies.length > 0) {
+        const lastReply = bug.replies[bug.replies.length - 1];
+        replyHtml = `
+          <div class="bug-reply">
+            <div class="bug-reply-header">
+              <h4>💬 管理员回复</h4>
+              <span class="reply-time">${formatBugTime(lastReply.time)}</span>
+            </div>
+            <p>${escapeHtml(lastReply.content)}</p>
+          </div>
+        `;
+      }
+      
+      return `
+        <div class="bug-item" data-id="${bug.id}">
+          <div class="bug-header">
+            <div class="bug-title-wrapper">
+              <h3 class="bug-title">${escapeHtml(bug.title)}</h3>
+              <span class="bug-id">${bug.id}</span>
+            </div>
+            <div class="bug-badges">
+              <span class="badge badge-status ${bug.status}">${statusDisplay.label}</span>
+              <span class="badge badge-category">${categoryDisplay.icon} ${categoryDisplay.label}</span>
+              <span class="badge badge-priority ${bug.priority}">${priorityDisplay.label}优先级</span>
+            </div>
+          </div>
+          <div class="bug-meta">
+            <span>👤 ${escapeHtml(bug.submitter)}</span>
+            <span>🕐 ${submitTime}</span>
+            <span>🖥️ ${escapeHtml(bug.browser.substring(0, 50))}${bug.browser.length > 50 ? '...' : ''}</span>
+          </div>
+          <div class="bug-description">
+            ${escapeHtml(bug.description)}
+          </div>
+          ${screenshotsHtml}
+          ${replyHtml}
+        </div>
+      `;
+    }
+
+    // 加载统计数据
+    function loadStatistics() {
+      try {
+        const stats = getBugStatistics();
+        document.getElementById('stat-total').textContent = stats.total;
+        document.getElementById('stat-pending').textContent = stats.pending;
+        document.getElementById('stat-processing').textContent = stats.processing;
+        document.getElementById('stat-resolved').textContent = stats.resolved;
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+      }
+    }
+
+    // 更新分页
+    function updatePagination() {
+      document.getElementById('page-info').textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+      document.getElementById('prev-btn').disabled = currentPage <= 1;
+      document.getElementById('next-btn').disabled = currentPage >= totalPages;
+    }
+
+    // 切换页面
+    function changePage(delta) {
+      const newPage = currentPage + delta;
+      if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        loadBugList();
+        // 滚动到顶部
+        document.querySelector('.bug-list-section').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // 打开图片预览
+    function openImageModal(src) {
+      const modal = document.getElementById('image-modal');
+      const img = document.getElementById('modal-image');
+      img.src = src;
+      modal.classList.add('active');
+    }
+
+    // 关闭图片预览
+    function closeImageModal() {
+      const modal = document.getElementById('image-modal');
+      modal.classList.remove('active');
+    }
+
+    // HTML转义，防止XSS
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

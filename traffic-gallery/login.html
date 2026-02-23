@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 登录/注册页面 (login.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的登录/注册页面，主要功能包括：
+
+1. 登录功能：用户可以使用已有账号登录系统
+2. 注册功能：新用户可以注册新账号
+3. 表单切换：在登录和注册表单之间自由切换
+4. 表单验证：实时验证用户输入的信息
+5. 密码确认：注册时验证两次密码输入是否一致
+6. 验证码：注册时需要输入验证码
+7. 记住我：登录时可以选择记住登录状态
+
+【页面结构】
+- 导航栏：与其他页面保持一致的导航结构
+- 页面标题：显示"用户登录/注册"标题和副标题
+- 认证区域：包含登录和注册两个表单
+- 表单切换：登录和注册标签页切换
+- 登录表单：包含用户名、密码、记住我选项
+- 注册表单：包含用户名、密码、确认密码、验证码
+- 页脚：包含网站链接、统计数据和版权信息
+
+【技术特点】
+- 响应式设计，适配不同屏幕尺寸
+- 表单切换功能，无需页面刷新
+- 客户端表单验证
+- 模拟登录/注册验证流程
+- 登录成功后自动跳转到首页
+- 注册成功后自动切换到登录表单
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/data.js, js/main.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录/注册 - 交通图库</title>
+  <meta name="description" content="交通图库用户登录和注册页面，用户可以登录已有账号或注册新账号。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面内容 -->
+  <main class="content">
+    <!-- 页面标题 -->
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title">用户登录/注册</h1>
+        <p class="page-subtitle">登录已有账号或注册新账号，享受更多功能</p>
+      </div>
+    </section>
+
+    <!-- 登录/注册表单 -->
+    <section class="auth-section">
+      <div class="container">
+        <div class="row" style="display: flex; justify-content: center;">
+          <div class="col-md-6">
+            <!-- 切换按钮 -->
+            <div class="auth-tabs" style="display: flex; margin-bottom: 2rem; border-bottom: 1px solid #ddd;">
+              <button type="button" id="login-tab" class="auth-tab active" style="flex: 1; padding: 1rem; background: none; border: none; border-bottom: 2px solid #3498db; font-size: 1.1rem; font-weight: 500; cursor: pointer;">登录</button>
+              <button type="button" id="register-tab" class="auth-tab" style="flex: 1; padding: 1rem; background: none; border: none; border-bottom: 2px solid transparent; font-size: 1.1rem; font-weight: 500; cursor: pointer;">注册</button>
+            </div>
+
+            <!-- 登录表单 -->
+            <div id="login-form-container">
+              <form id="login-form">
+                <div class="form-group">
+                  <label for="login-username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                  <input type="text" id="login-username" class="form-control" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                  <label for="login-password" class="form-label">密码 <span class="text-danger">*</span></label>
+                  <input type="password" id="login-password" class="form-control" placeholder="请输入密码" required>
+                </div>
+                <div class="form-group">
+                  <label for="login-secret-key" class="form-label">绑定密钥 <span class="text-danger">*</span></label>
+                  <input type="text" id="login-secret-key" class="form-control" placeholder="请输入绑定密钥" required>
+                  <small class="form-text text-muted">密钥在注册时生成，请妥善保管</small>
+                </div>
+                <div class="form-group">
+                  <div class="form-check">
+                    <input type="checkbox" id="remember-me" class="form-check-input">
+                    <label for="remember-me" class="form-check-label">记住我</label>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary">登录</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="register-form-container" style="display: none;">
+              <form id="register-form">
+                <div class="form-group">
+                  <label for="register-username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                  <input type="text" id="register-username" class="form-control" placeholder="请输入用户名（3-20个字符）" required>
+                </div>
+                <div class="form-group">
+                  <label for="register-password" class="form-label">密码 <span class="text-danger">*</span></label>
+                  <input type="password" id="register-password" class="form-control" placeholder="请输入密码（6-20个字符）" required>
+                </div>
+                <div class="form-group">
+                  <label for="register-confirm-password" class="form-label">确认密码 <span class="text-danger">*</span></label>
+                  <input type="password" id="register-confirm-password" class="form-control" placeholder="请确认密码" required>
+                </div>
+                <div class="form-group">
+                  <label for="register-captcha" class="form-label">验证码 <span class="text-danger">*</span></label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <input type="text" id="register-captcha" class="form-control" placeholder="请输入验证码" required>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="captcha-image" style="background-color: #f8f9fa; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.25rem;">1A2B3C</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 注册成功后显示密钥的区域 -->
+                <div id="register-secret-key-display" class="form-group" style="display: none;">
+                  <div class="alert alert-success" style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 4px;">
+                    <h4 style="margin-top: 0; color: #155724;">🎉 注册成功！</h4>
+                    <p style="margin-bottom: 10px;">请妥善保管您的绑定密钥，这是登录的必要凭证：</p>
+                    <div style="background-color: #fff; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 1.1rem; text-align: center; letter-spacing: 2px; margin: 10px 0;">
+                      <strong id="generated-secret-key"></strong>
+                    </div>
+                    <p style="font-size: 0.9rem; margin-bottom: 0;">⚠️ 密钥仅显示一次，请立即复制保存！</p>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" id="register-submit-btn">注册</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="about.html#contact">联系我们</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users"></span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits"></span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users"></span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits"></span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="back-to-top">↑</div>
+
+  <!-- 登录/注册脚本 -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 绑定标签切换事件
+      bindTabEvents();
+      // 绑定登录表单事件
+      bindLoginFormEvent();
+      // 绑定注册表单事件
+      bindRegisterFormEvent();
+    });
+
+    // 绑定标签切换事件
+    function bindTabEvents() {
+      const loginTab = document.getElementById('login-tab');
+      const registerTab = document.getElementById('register-tab');
+      const loginFormContainer = document.getElementById('login-form-container');
+      const registerFormContainer = document.getElementById('register-form-container');
+
+      loginTab.addEventListener('click', function() {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        loginFormContainer.style.display = 'block';
+        registerFormContainer.style.display = 'none';
+      });
+
+      registerTab.addEventListener('click', function() {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        registerFormContainer.style.display = 'block';
+        loginFormContainer.style.display = 'none';
+      });
+    }
+
+    // 绑定登录表单事件
+    function bindLoginFormEvent() {
+      const loginForm = document.getElementById('login-form');
+      loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value;
+        const secretKey = document.getElementById('login-secret-key').value.trim();
+
+        // 使用新的密钥验证机制登录
+        const result = userLoginWithSecretKey(username, password, secretKey);
+        
+        if (result.success) {
+          alert('登录成功！欢迎回来，' + username);
+          window.location.href = 'index.html';
+        } else {
+          alert('登录失败：' + result.message);
+        }
+      });
+    }
+
+    // 绑定注册表单事件
+    function bindRegisterFormEvent() {
+      const registerForm = document.getElementById('register-form');
+      registerForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+        const confirmPassword = document.getElementById('register-confirm-password').value;
+        const captcha = document.getElementById('register-captcha').value.trim();
+
+        // 验证验证码
+        if (captcha !== '1A2B3C') {
+          alert('验证码错误');
+          return;
+        }
+
+        // 使用新的密钥绑定机制注册
+        const result = userRegisterWithSecretKey(username, password, confirmPassword);
+        
+        if (result.success) {
+          // 显示密钥
+          document.getElementById('generated-secret-key').textContent = result.secretKey;
+          document.getElementById('register-secret-key-display').style.display = 'block';
+          document.getElementById('register-submit-btn').style.display = 'none';
+          
+          // 3秒后自动切换到登录页
+          setTimeout(function() {
+            if (confirm('是否立即跳转到登录页面？')) {
+              document.getElementById('login-tab').click();
+              document.getElementById('login-username').value = username;
+              // 重置注册表单
+              document.getElementById('register-secret-key-display').style.display = 'none';
+              document.getElementById('register-submit-btn').style.display = 'block';
+              registerForm.reset();
+            }
+          }, 3000);
+        } else {
+          alert('注册失败：' + result.message);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

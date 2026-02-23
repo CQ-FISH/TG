@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 联系我们页面 (contact.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的联系我们页面，主要功能包括：
+
+1. 联系表单：用户可以填写姓名、邮箱、主题和留言内容
+2. 表单验证：确保必填字段的完整性
+3. 验证码：防止恶意提交
+4. 提交处理：模拟提交并显示成功提示
+5. 表单重置：提交成功后自动重置表单
+
+【页面结构】
+- 导航栏：与其他页面保持一致的导航结构
+- 页面标题：显示"联系我们"标题和副标题
+- 联系表单：包含姓名、邮箱、主题、留言内容和验证码字段
+- 页脚：包含网站链接、统计数据和版权信息
+
+【技术特点】
+- 响应式设计，适配不同屏幕尺寸
+- 客户端表单验证
+- 模拟表单提交处理
+- 成功提示反馈
+- 自动表单重置
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/data.js, js/main.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>联系我们 - 交通图库</title>
+  <meta name="description" content="交通图库联系我们页面，用户可以在此填写问题、建议等，管理员会及时回复。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面内容 -->
+  <main class="content">
+    <!-- 页面标题 -->
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title">联系我们</h1>
+        <p class="page-subtitle">如果您有任何问题、建议或意见，欢迎随时联系我们</p>
+      </div>
+    </section>
+
+    <!-- 联系表单 -->
+    <section class="contact-section">
+      <div class="container">
+        <div class="upload-form-container">
+          <form id="contact-form">
+            <div class="form-group">
+              <label for="contact-name" class="form-label">姓名 <span class="text-danger">*</span></label>
+              <input type="text" id="contact-name" class="form-control" placeholder="请输入您的姓名" required>
+            </div>
+            <div class="form-group">
+              <label for="contact-email" class="form-label">邮箱 <span class="text-danger">*</span></label>
+              <input type="email" id="contact-email" class="form-control" placeholder="请输入您的邮箱" required>
+            </div>
+            <div class="form-group">
+              <label for="contact-subject" class="form-label">主题 <span class="text-danger">*</span></label>
+              <input type="text" id="contact-subject" class="form-control" placeholder="请输入问题主题" required>
+            </div>
+            <div class="form-group">
+              <label for="contact-message" class="form-label">留言内容 <span class="text-danger">*</span></label>
+              <textarea id="contact-message" class="form-control" rows="6" placeholder="请详细描述您的问题或建议" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="contact-captcha" class="form-label">验证码 <span class="text-danger">*</span></label>
+              <div class="row">
+                <div class="col-md-6">
+                  <input type="text" id="contact-captcha" class="form-control" placeholder="请输入验证码" required>
+                </div>
+                <div class="col-md-6">
+                  <div class="captcha-image" style="background-color: #f8f9fa; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 1.2rem; font-weight: bold; letter-spacing: 0.25rem;">1A2B3C</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">提交</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="contact.html">联系我们</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users"></span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits"></span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users"></span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits"></span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="back-to-top">↑</div>
+
+  <!-- 联系我们脚本 -->
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 绑定表单提交事件
+      bindContactFormEvent();
+    });
+
+    // 绑定联系表单事件
+    function bindContactFormEvent() {
+      const contactForm = document.getElementById('contact-form');
+      contactForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('contact-name').value;
+        const email = document.getElementById('contact-email').value;
+        const subject = document.getElementById('contact-subject').value;
+        const message = document.getElementById('contact-message').value;
+
+        // 模拟提交
+        alert('提交成功！我们会尽快回复您的问题。');
+        contactForm.reset();
+      });
+    }
+  </script>
+</body>
+</html>

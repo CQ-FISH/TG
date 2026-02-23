@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 开屏公告测试页面 (splash-test.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的开屏公告测试页面，用于验证开屏公告功能的正常运行。
+
+【功能说明】
+1. 测试开屏公告的显示效果
+2. 验证公告的关闭功能
+3. 测试"7天内不再显示"选项
+4. 验证响应式设计
+
+【技术特点】
+- 简洁的测试页面结构
+- 直接引入开屏公告脚本
+- 提供测试控制按钮
+
+【依赖文件】
+- JS文件：js/splash-announcement.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开屏公告测试 - 交通图库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+        }
+        
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .instructions {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>开屏公告功能测试</h1>
+        <p>测试交通图库的开屏公告功能是否正常工作</p>
+    </header>
+    
+    <div class="container">
+        <div class="test-section">
+            <h2>测试说明</h2>
+            <div class="instructions">
+                <h3>测试步骤：</h3>
+                <ol>
+                    <li>页面加载时，应该自动显示开屏公告</li>
+                    <li>点击"关闭"按钮，公告应该消失</li>
+                    <li>勾选"7天内不再显示"选项，然后关闭公告</li>
+                    <li>刷新页面，公告应该不再显示</li>
+                    <li>点击"重置公告状态"按钮</li>
+                    <li>刷新页面，公告应该再次显示</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>测试控制</h2>
+            <button class="btn btn-primary" onclick="showSplashAnnouncement()">显示开屏公告</button>
+            <button class="btn btn-secondary" onclick="resetSplashAnnouncement()">重置公告状态</button>
+            <button class="btn btn-secondary" onclick="location.reload()">刷新页面</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>功能特性</h2>
+            <ul>
+                <li>✅ 页面加载自动显示</li>
+                <li>✅ 平滑的显示/隐藏动画</li>
+                <li>✅ 响应式设计，适配不同屏幕</li>
+                <li>✅ 支持HTML内容</li>
+                <li>✅ 记录用户关闭状态</li>
+                <li>✅ 7天内不再显示选项</li>
+                <li>✅ 点击遮罩层可关闭</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 开屏公告脚本 -->
+    <script src="js/splash-announcement.js"></script>
+    
+    <script>
+        // 页面加载完成后初始化开屏公告
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，初始化开屏公告...');
+            initSplashAnnouncement();
+        });
+        
+        // 测试显示公告
+        function showTestAnnouncement() {
+            showSplashAnnouncement({
+                title: '🎉 测试公告',
+                content: '<p>这是一个测试公告，用于验证开屏公告功能是否正常工作。</p><p>测试内容包括：</p><ul><li>公告显示</li><li>动画效果</li><li>关闭功能</li><li>本地存储</li></ul>',
+                duration: 10000 // 10秒后自动关闭
+            });
+        }
+    </script>
+</body>
+</html>

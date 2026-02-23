@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 关于我们页面 (about.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的关于我们页面，主要功能包括：
+
+1. 平台使命与愿景：介绍交通图库的核心使命、特色功能和发展愿景
+2. 使用规则：详细说明平台的内容发布规范、用户行为规范、违规处理和隐私保护政策
+3. 联系方式：提供多种联系方式，包括电子邮箱、在线反馈、GitHub和社区论坛
+4. 开发团队：展示平台的核心开发团队成员和贡献者
+5. 锚点导航：支持通过URL锚点快速跳转到对应章节
+
+【页面结构】
+- 导航栏：与其他页面保持一致的导航结构
+- 页面标题：显示"关于交通图库"标题和副标题
+- 关于我们：平台使命、特色功能、愿景和发展历程
+- 使用规则：详细的平台使用规则和违规处理办法
+- 联系我们：多种联系方式的卡片展示
+- 开发团队：团队成员的卡片展示
+- 页脚：包含网站链接、统计数据和版权信息
+
+【技术特点】
+- 响应式设计，适配不同屏幕尺寸
+- 平滑滚动到锚点功能
+- 卡片式布局，美观且易于阅读
+- 自定义CSS样式，提升页面美观度
+- 锚点偏移处理，避免导航栏遮挡内容
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/data.js, js/main.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我们 - 交通图库</title>
+  <meta name="description" content="了解交通图库平台，全品类交通摄影作品分享平台的使命与愿景。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/main.js"></script>
+  <style>
+    /* 关于页面特有样式 */
+    .about-section {
+      padding: 3rem 0;
+      background-color: #fff;
+    }
+    
+    .about-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .about-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .about-subtitle {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .about-content {
+      line-height: 1.8;
+      color: #555;
+    }
+    
+    .about-content h3 {
+      font-size: 1.3rem;
+      color: #333;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #3498db;
+    }
+    
+    .about-content p {
+      margin-bottom: 1rem;
+    }
+    
+    /* 规则部分样式 */
+    .rules-section {
+      background-color: #f8f9fa;
+      padding: 3rem 0;
+    }
+    
+    .rule-item {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .rule-item h4 {
+      color: #e74c3c;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .rule-item p {
+      color: #555;
+      line-height: 1.6;
+    }
+    
+    .rule-item ul {
+      margin-left: 1.5rem;
+      color: #555;
+    }
+    
+    .rule-item li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+    
+    /* 联系我们样式 */
+    .contact-section {
+      padding: 3rem 0;
+      background-color: #fff;
+    }
+    
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .contact-card {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .contact-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .contact-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-card h4 {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    
+    .contact-card p {
+      color: #7f8c8d;
+      font-size: 0.95rem;
+    }
+    
+    .contact-card a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    
+    .contact-card a:hover {
+      text-decoration: underline;
+    }
+    
+    /* 锚点偏移 */
+    .anchor-offset {
+      display: block;
+      position: relative;
+      top: -80px;
+      visibility: hidden;
+    }
+    
+    /* 团队成员 */
+    .team-section {
+      background-color: #f8f9fa;
+      padding: 3rem 0;
+    }
+    
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .team-member {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .team-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #3498db;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+    }
+    
+    .team-member h4 {
+      font-size: 1.1rem;
+      color: #333;
+      margin-bottom: 0.25rem;
+    }
+    
+    .team-member p {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="my.html" class="dropdown-item">我的作品</a>
+            <a href="admin.html" class="dropdown-item">管理后台</a>
+            <a href="review.html" class="dropdown-item">作品审核</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面内容 -->
+  <main class="content">
+    <!-- 页面标题 -->
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title">关于交通图库</h1>
+        <p class="page-subtitle">了解我们的使命、愿景与平台规则</p>
+      </div>
+    </section>
+
+    <!-- 关于我们 -->
+    <section class="about-section" id="about">
+      <div class="about-container">
+        <h2 class="about-title">🎯 我们的使命</h2>
+        <p class="about-subtitle">记录交通之美，分享旅途精彩</p>
+        
+        <div class="about-content">
+          <p>交通图库是一个专注于交通摄影作品的分享平台，致力于为广大交通爱好者、摄影师和旅行者提供一个展示和交流的空间。我们相信，每一张交通摄影作品都承载着独特的故事和情感，记录着城市发展的脉搏和人类文明的进步。</p>
+          
+          <h3>📸 平台特色</h3>
+          <p><strong>全品类覆盖：</strong>平台涵盖铁路、航空、陆运、水运、特殊交通以及风景人文六大类别，满足不同摄影爱好者的需求。</p>
+          <p><strong>高质量社区：</strong>我们鼓励原创、高质量的摄影作品，通过审核机制确保平台内容的专业性和观赏性。</p>
+          <p><strong>互动交流：</strong>用户可以对作品点赞、评论，与摄影师直接交流，分享拍摄心得和技巧。</p>
+          <p><strong>便捷上传：</strong>简洁的上传流程，支持批量上传和智能分类，让分享变得轻松愉快。</p>
+          
+          <h3>🌟 我们的愿景</h3>
+          <p>成为全品类交通摄影领域最具影响力的作品分享平台，连接全球交通爱好者，共同记录和传承交通文化。我们希望通过影像的力量，让更多人关注和了解交通行业的发展，感受交通工具背后的科技魅力和人文情怀。</p>
+          
+          <h3>📅 发展历程</h3>
+          <p>交通图库成立于2026年，由一群热爱交通摄影的爱好者发起。从最初的铁路摄影小组，逐步发展成为涵盖所有交通类别的综合性摄影平台。我们始终坚持用户至上的原则，不断优化产品体验，为用户提供更好的服务。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 使用规则 -->
+    <span class="anchor-offset" id="rules"></span>
+    <section class="rules-section">
+      <div class="about-container">
+        <h2 class="about-title">📋 使用规则</h2>
+        <p class="about-subtitle">为了维护良好的社区环境，请遵守以下规则</p>
+        
+        <div class="rule-item">
+          <h4>📝 内容发布规范</h4>
+          <ul>
+            <li>上传的作品必须是原创或已获得授权，禁止盗用他人作品</li>
+            <li>作品内容应与交通主题相关，包括但不限于交通工具、交通设施、旅途风光等</li>
+            <li>作品描述应真实准确，包含拍摄时间、地点等基本信息</li>
+            <li>禁止上传涉及色情、暴力、政治敏感等违规内容</li>
+            <li>禁止上传模糊、过度曝光或质量过低的照片</li>
+          </ul>
+        </div>
+        
+        <div class="rule-item">
+          <h4>👤 用户行为规范</h4>
+          <ul>
+            <li>尊重他人，禁止发布侮辱、诽谤、人身攻击等不当言论</li>
+            <li>禁止恶意刷赞、刷评论等作弊行为</li>
+            <li>禁止发布广告、垃圾信息或诱导分享的内容</li>
+            <li>禁止冒充他人身份或发布虚假信息</li>
+            <li>尊重知识产权，转载需注明出处并获得授权</li>
+          </ul>
+        </div>
+        
+        <div class="rule-item">
+          <h4>⚖️ 违规处理</h4>
+          <ul>
+            <li>轻微违规：作品下架、警告通知</li>
+            <li>一般违规：限制上传功能3-7天</li>
+            <li>严重违规：账号封禁7-30天</li>
+            <li>特别严重：永久封禁账号，并保留追究法律责任的权利</li>
+          </ul>
+        </div>
+        
+        <div class="rule-item">
+          <h4>🔒 隐私保护</h4>
+          <ul>
+            <li>我们严格保护用户个人信息，不会向第三方泄露</li>
+            <li>用户上传的作品版权归作者所有，平台仅享有展示权</li>
+            <li>用户可以随时删除自己的作品和账号信息</li>
+            <li>平台会采取必要措施保护用户数据安全</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 联系我们 -->
+    <span class="anchor-offset" id="contact"></span>
+    <section class="contact-section">
+      <div class="about-container">
+        <h2 class="about-title">📞 联系我们</h2>
+        <p class="about-subtitle">有任何问题或建议，欢迎与我们联系</p>
+        
+        <div class="contact-grid">
+          <!-- 电子邮箱联系 -->
+          <div class="contact-card">
+            <div class="contact-icon">📧</div>
+            <h4>电子邮箱</h4>
+            <p><a href="mailto:contact@trafficgallery.com">contact@trafficgallery.com</a></p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">工作日 24小时内回复</p>
+          </div>
+          
+          <!-- 在线反馈 -->
+          <div class="contact-card">
+            <div class="contact-icon">💬</div>
+            <h4>在线反馈</h4>
+            <p><a href="bug.html">提交BUG或建议</a></p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">我们会认真处理每一条反馈</p>
+          </div>
+          
+          <!-- GitHub -->
+          <div class="contact-card">
+            <div class="contact-icon">🐙</div>
+            <h4>GitHub</h4>
+            <p><a href="https://github.com/TrafficGallery/TrafficGallery" target="_blank">项目开源地址</a></p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">欢迎贡献代码</p>
+          </div>
+          
+          <!-- 社区论坛 -->
+          <div class="contact-card">
+            <div class="contact-icon">🌐</div>
+            <h4>社区论坛</h4>
+            <p><a href="#">访问社区论坛</a></p>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">与其他爱好者交流</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 开发团队 -->
+    <section class="team-section">
+      <div class="about-container">
+        <h2 class="about-title">👥 开发团队</h2>
+        <p class="about-subtitle">感谢这些贡献者的辛勤付出</p>
+        
+        <div class="team-grid">
+          <!-- 核心开发 -->
+          <div class="team-member">
+            <div class="team-avatar">👨‍💻</div>
+            <h4>核心开发</h4>
+            <p>平台架构与开发</p>
+          </div>
+          
+          <!-- UI设计 -->
+          <div class="team-member">
+            <div class="team-avatar">🎨</div>
+            <h4>UI设计</h4>
+            <p>界面设计与用户体验</p>
+          </div>
+          
+          <!-- 内容运营 -->
+          <div class="team-member">
+            <div class="team-avatar">📷</div>
+            <h4>内容运营</h4>
+            <p>作品审核与社区管理</p>
+          </div>
+          
+          <!-- 开源贡献者 -->
+          <div class="team-member">
+            <div class="team-avatar">🤝</div>
+            <h4>开源贡献者</h4>
+            <p>感谢所有贡献代码的朋友</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <!-- 关于我们链接 -->
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="about.html#contact">联系我们</a></li>
+          </ul>
+        </div>
+        <!-- 快速链接 -->
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <!-- 帮助中心 -->
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users">0</span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits">0</span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users">0</span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits">0</span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div class="back-to-top" id="back-to-top">↑</div>
+
+  <script>
+    /**
+     * 关于页面特有逻辑
+     * 
+     * 【功能说明】
+     * 1. 为页面中的锚点链接添加平滑滚动效果
+     * 2. 处理锚点点击事件，实现页面内平滑导航
+     * 
+     * 【技术实现】
+     * - 使用DOMContentLoaded事件确保DOM加载完成后执行
+     * - 监听所有以"#"开头的链接点击事件
+     * - 使用scrollIntoView方法实现平滑滚动
+     * - 处理边界情况，确保导航正常
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+      /**
+       * 为锚点链接添加平滑滚动效果
+       * 
+       * 【实现原理】
+       * 1. 选择所有href属性以"#"开头的链接
+       * 2. 为每个链接添加点击事件监听器
+       * 3. 阻止默认跳转行为
+       * 4. 查找目标锚点元素
+       * 5. 使用scrollIntoView方法平滑滚动到目标位置
+       */
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          // 只处理非空锚点链接
+          if (href !== '#') {
+            e.preventDefault();
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({
+                behavior: 'smooth', // 平滑滚动
+                block: 'start'      // 滚动到元素顶部
+              });
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

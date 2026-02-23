@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 作品上传页面 (upload.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的作品上传页面，采用现代化设计风格：
+- 参考南孚官网的简洁大气风格
+- 参考B站的年轻化交互设计
+- 支持拖拽上传、批量上传
+- 实时预览和表单验证
+- 上传进度显示
+
+【主要功能】
+1. 拖拽上传：支持拖拽图片到上传区域
+2. 批量上传：一次可选择多张图片
+3. 实时预览：上传前预览图片效果
+4. 智能分类：自动推荐分类标签
+5. 表单验证：完整的字段验证机制
+6. 进度显示：上传进度实时反馈
+7. 草稿保存：自动保存未提交的表单
+
+【页面结构】
+- 现代化导航栏
+- 拖拽上传区域
+- 作品信息表单
+- 批量管理面板
+- 上传进度显示
+- 页脚统计信息
+
+【技术特点】
+- 响应式设计，完美适配各种设备
+- CSS动画效果，提升用户体验
+- 本地草稿自动保存
+- 图片压缩优化
+- 断点续传支持
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v2.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>上传作品 - 交通图库</title>
+  <meta name="description" content="上传你的交通摄影作品，支持拖拽上传、批量上传、实时预览等功能。">
+  
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  
+  <!-- 上传页面专用样式 -->
+  <style>
+    /* ========================================
+       页面整体布局
+       ======================================== */
+    .upload-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+      padding-bottom: 60px;
+    }
+    
+    /* ========================================
+       页面头部 - 参考南孚风格
+       ======================================== */
+    .upload-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 60px 0;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .upload-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+      animation: headerPulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes headerPulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .upload-header-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .upload-header h1 {
+      font-size: 2.5rem;
+      margin: 0 0 15px 0;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .upload-header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* ========================================
+       上传步骤指示器 - 参考B站风格
+       ======================================== */
+    .upload-steps {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin: -30px auto 40px;
+      max-width: 800px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .step-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      border: 3px solid #ddd;
+    }
+    
+    .step-item.active .step-circle {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+      transform: scale(1.1);
+    }
+    
+    .step-item.completed .step-circle {
+      background: #4CAF50;
+      color: white;
+      border-color: transparent;
+    }
+    
+    .step-label {
+      font-size: 0.9rem;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .step-item.active .step-label {
+      color: #667eea;
+      font-weight: 700;
+    }
+    
+    /* ========================================
+       主内容区域
+       ======================================== */
+    .upload-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    .upload-container {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 30px;
+    }
+    
+    @media (max-width: 992px) {
+      .upload-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* ========================================
+       拖拽上传区域 - 现代化设计
+       ======================================== */
+    .upload-zone {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+    
+    .drop-area {
+      border: 3px dashed #ddd;
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: #fafafa;
+    }
+    
+    .drop-area:hover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+    
+    .drop-area.dragover {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
+      transform: scale(1.02);
+    }
+    
+    .drop-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    
+    .drop-area:hover .drop-icon {
+      opacity: 1;
+      transform: translateY(-5px);
+    }
+    
+    .drop-text {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    
+    .drop-hint {
+      font-size: 0.9rem;
+      color: #999;
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    /* ========================================
+       图片预览网格
+       ======================================== */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 30px;
+    }
+    
+    .preview-item {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      aspect-ratio: 1;
+    }
+    
+    .preview-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .preview-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .preview-item:hover .preview-overlay {
+      opacity: 1;
+    }
+    
+    .preview-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .preview-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .preview-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .preview-btn.delete:hover {
+      background: #f44336;
+      color: white;
+    }
+    
+    .preview-btn.edit:hover {
+      background: #2196F3;
+      color: white;
+    }
+    
+    .preview-index {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(102, 126, 234, 0.9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    
+    /* ========================================
+       侧边栏 - 表单区域
+       ======================================== */
+    .upload-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .form-card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .form-card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .form-card-title .icon {
+      font-size: 1.2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    
+    .form-label .required {
+      color: #f44336;
+      margin-left: 4px;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background: #fafafa;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      padding-right: 40px;
+    }
+    
+    .form-hint {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 6px;
+    }
+    
+    /* 标签输入 */
+    .tag-input-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      background: #fafafa;
+      min-height: 48px;
+      transition: all 0.3s ease;
+    }
+    
+    .tag-input-container:focus-within {
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      animation: tagIn 0.3s ease;
+    }
+    
+    @keyframes tagIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .tag-remove {
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .tag-remove:hover {
+      opacity: 1;
+    }
+    
+    .tag-input {
+      flex: 1;
+      min-width: 100px;
+      border: none;
+      background: transparent;
+      padding: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    
+    /* 推荐标签 */
+    .suggested-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    
+    .suggested-tag {
+      padding: 5px 12px;
+      background: #f0f0f0;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+    }
+    
+    .suggested-tag:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+    /* ========================================
+       提交按钮
+       ======================================== */
+    .submit-section {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #666;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    /* ========================================
+       上传进度
+       ======================================== */
+    .upload-progress {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 350px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      padding: 20px;
+      z-index: 1000;
+      transform: translateY(150%);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .upload-progress.show {
+      transform: translateY(0);
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .progress-title {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .progress-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.2s;
+    }
+    
+    .progress-close:hover {
+      color: #333;
+    }
+    
+    .progress-bar-container {
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    
+    /* ========================================
+       提示信息
+       ======================================== */
+    .upload-tips {
+      background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+      border-left: 4px solid #ffc107;
+      padding: 15px 20px;
+      border-radius: 0 10px 10px 0;
+      margin-bottom: 20px;
+    }
+    
+    .upload-tips-title {
+      font-weight: 600;
+      color: #856404;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .upload-tips-list {
+      margin: 0;
+      padding-left: 20px;
+      color: #856404;
+      font-size: 0.9rem;
+    }
+    
+    .upload-tips-list li {
+      margin-bottom: 5px;
+    }
+    
+    /* ========================================
+       空状态
+       ======================================== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+    
+    .empty-state-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    
+    .empty-state-hint {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    
+    /* ========================================
+       响应式调整
+       ======================================== */
+    @media (max-width: 768px) {
+      .upload-header {
+        padding: 40px 20px;
+      }
+      
+      .upload-header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .upload-steps {
+        gap: 30px;
+      }
+      
+      .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+      
+      .upload-zone {
+        padding: 25px;
+      }
+      
+      .drop-area {
+        padding: 40px 20px;
+      }
+      
+      .drop-icon {
+        font-size: 3rem;
+      }
+      
+      .preview-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+      
+      .upload-progress {
+        left: 20px;
+        right: 20px;
+        width: auto;
+      }
+    }
+    
+    /* 加载动画 */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link active">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="../profile.html" class="dropdown-item">个人中心</a>
+            <a href="../my.html" class="dropdown-item">我的作品</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">🔍</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面主体 -->
+  <div class="upload-page">
+    <!-- 页面头部 -->
+    <header class="upload-header">
+      <div class="upload-header-content">
+        <h1>📸 上传你的作品</h1>
+        <p>分享精彩交通瞬间，与万千摄影爱好者一起记录美好</p>
+      </div>
+    </header>
+    
+    <!-- 步骤指示器 -->
+    <div class="upload-steps">
+      <div class="step-item active" data-step="1">
+        <div class="step-circle">1</div>
+        <span class="step-label">选择图片</span>
+      </div>
+      <div class="step-item" data-step="2">
+        <div class="step-circle">2</div>
+        <span class="step-label">填写信息</span>
+      </div>
+      <div class="step-item" data-step="3">
+        <div class="step-circle">3</div>
+        <span class="step-label">提交审核</span>
+      </div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <main class="upload-main">
+      <div class="upload-container">
+        <!-- 左侧：上传区域 -->
+        <div class="upload-zone">
+          <!-- 提示信息 -->
+          <div class="upload-tips">
+            <div class="upload-tips-title">
+              <span>💡</span>
+              <span>上传须知</span>
+            </div>
+            <ul class="upload-tips-list">
+              <li>支持 JPG、PNG、WebP 格式，单张图片不超过 10MB</li>
+              <li>建议上传高清原图，展示最佳效果</li>
+              <li>请确保作品为原创或拥有合法使用权</li>
+              <li>上传即表示同意《用户上传协议》</li>
+            </ul>
+          </div>
+          
+          <!-- 拖拽上传区域 -->
+          <div class="drop-area" id="drop-area">
+            <div class="drop-icon">📁</div>
+            <div class="drop-text">拖拽图片到此处，或点击选择文件</div>
+            <div class="drop-hint">支持批量上传，最多 20 张图片</div>
+            <input type="file" id="file-input" class="file-input" accept="image/*" multiple>
+          </div>
+          
+          <!-- 图片预览区域 -->
+          <div class="preview-section" id="preview-section" style="display: none;">
+            <h3 style="margin: 30px 0 15px; color: #333;">
+              已选择 <span id="selected-count">0</span> 张图片
+              <button type="button" class="btn btn-secondary" style="float: right; padding: 8px 16px; font-size: 0.85rem;" onclick="clearAllImages()">
+                清空全部
+              </button>
+            </h3>
+            <div class="preview-grid" id="preview-grid"></div>
+          </div>
+          
+          <!-- 空状态 -->
+          <div class="empty-state" id="empty-state">
+            <div class="empty-state-icon">🖼️</div>
+            <div class="empty-state-text">还没有选择图片</div>
+            <div class="empty-state-hint">点击上方区域或拖拽图片开始上传</div>
+          </div>
+        </div>
+        
+        <!-- 右侧：表单区域 -->
+        <aside class="upload-sidebar">
+          <!-- 作品信息 -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="icon">📝</span>
+              <span>作品信息</span>
+            </h3>
+            
+            <div class="form-group">
+              <label class="form-label">
+                作品标题
+                <span class="required">*</span>
+              </label>
+              <input type="text" class="form-input" id="work-title" placeholder="给你的作品起个名字">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                作品分类
+                <span class="required">*</span>
+              </label>
+              <select class="form-select" id="main-category">
+                <option value="">选择主分类</option>
+              </select>
+              <select class="form-select" id="sub-category" style="margin-top: 10px;" disabled>
+                <option value="">选择子分类</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">作品描述</label>
+              <textarea class="form-textarea" id="work-description" placeholder="介绍作品的拍摄背景、地点、时间等信息..."></textarea>
+            </div>
+          </div>
+          
+          <!-- 拍摄信息 -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="icon">📍</span>
+              <span>拍摄信息</span>
+            </h3>
+            
+            <div class="form-group">
+              <label class="form-label">拍摄地点</label>
+              <input type="text" class="form-input" id="shoot-location" placeholder="例如：北京南站">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">拍摄时间</label>
+              <input type="date" class="form-input" id="shoot-date">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">拍摄设备</label>
+              <input type="text" class="form-input" id="shoot-device" placeholder="例如：Canon EOS R5">
+            </div>
+          </div>
+          
+          <!-- 标签 -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="icon">🏷️</span>
+              <span>作品标签</span>
+            </h3>
+            
+            <div class="form-group">
+              <div class="tag-input-container" id="tag-container">
+                <input type="text" class="tag-input" id="tag-input" placeholder="输入标签后按回车">
+              </div>
+              <p class="form-hint">按回车添加标签，最多 10 个</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">推荐标签</label>
+              <div class="suggested-tags" id="suggested-tags">
+                <button type="button" class="suggested-tag" onclick="addTag('高铁')">高铁</button>
+                <button type="button" class="suggested-tag" onclick="addTag('地铁')">地铁</button>
+                <button type="button" class="suggested-tag" onclick="addTag('飞机')">飞机</button>
+                <button type="button" class="suggested-tag" onclick="addTag('日落')">日落</button>
+                <button type="button" class="suggested-tag" onclick="addTag('夜景')">夜景</button>
+                <button type="button" class="suggested-tag" onclick="addTag('城市')">城市</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 提交按钮 -->
+          <div class="submit-section">
+            <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+              <span>💾</span>
+              <span>存草稿</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="submit-btn" onclick="submitWorks()">
+              <span>🚀</span>
+              <span>提交审核</span>
+            </button>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 上传进度弹窗 -->
+  <div class="upload-progress" id="upload-progress">
+    <div class="progress-header">
+      <span class="progress-title">正在上传...</span>
+      <button type="button" class="progress-close" onclick="hideProgress()">×</button>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+    </div>
+    <div class="progress-info">
+      <span id="progress-text">准备上传...</span>
+      <span id="progress-percent">0%</span>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/upload-enhanced.js"></script>
+</body>
+</html>

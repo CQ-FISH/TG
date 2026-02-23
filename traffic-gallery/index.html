@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+交通图库 - 首页 (index.html)
+================================================================================
+
+【文件说明】
+本文件是交通图库网站的首页，是用户访问网站时看到的第一个页面，主要功能包括：
+
+1. 网站导航：包含品牌标识、主导航菜单、搜索框、用户登录状态
+2. 分类入口：展示六大交通摄影分类的快捷入口
+3. 精选作品：展示按点赞数排序的精选摄影作品
+4. 最新上传：展示最新上传的摄影作品
+5. 热门标签：展示用户常用的热门标签
+6. 网站统计：显示在线人数、累计访问等实时统计数据
+7. 底部链接：包含关于我们、快速链接、帮助中心等链接
+
+【页面结构】
+- 导航栏：顶部固定导航，包含登录/注册入口
+- 英雄区：欢迎信息和分类入口网格
+- 精选作品区：按点赞数排序的作品展示
+- 最新上传区：按时间排序的作品展示
+- 热门标签区：标签云展示
+- 页脚：包含网站链接、统计数据和版权信息
+
+【技术特点】
+- 使用响应式设计，适配不同屏幕尺寸
+- 图片懒加载，提升页面加载速度
+- 实时统计数据显示
+- 动态渲染作品列表
+- 分类下拉菜单
+
+【依赖文件】
+- CSS文件：css/global.css, css/layout.css
+- JS文件：js/config.js, js/data.js, js/main.js
+
+【作者】AI Assistant
+【日期】2026-02-21
+【版本】v1.0.0
+================================================================================
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交通图库 - 全品类交通摄影作品分享平台</title>
+  <meta name="description" content="交通图库是一个全品类交通摄影作品分享平台，涵盖铁路、航空、陆运、水运、特殊交通等多个领域的摄影作品。">
+  <!-- 全局样式 -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <!-- 核心JS文件 -->
+  <script src="js/config.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/main.js"></script>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <!-- 品牌标识 -->
+      <a href="index.html" class="navbar-brand">
+        <span class="navbar-brand-icon">🚗</span>
+        <span>交通图库</span>
+      </a>
+      
+      <!-- 主导航 -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">首页</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">分类</a>
+          <div class="dropdown-menu" id="nav-category-dropdown"></div>
+        </li>
+        <li class="nav-item">
+          <a href="gallery.html" class="nav-link">发现</a>
+        </li>
+        <li class="nav-item">
+          <a href="upload.html" class="nav-link">上传</a>
+        </li>
+        <li class="nav-item" id="login-register-link">
+          <a href="login.html" class="nav-link">登录/注册</a>
+        </li>
+        <li class="nav-item dropdown user-dropdown" id="user-dropdown" style="display: none;">
+          <div class="user-avatar" id="user-avatar">
+            <span id="username-display"></span>
+          </div>
+          <div class="dropdown-menu">
+            <a href="profile.html" class="dropdown-item">个人信息</a>
+            <a href="#" class="dropdown-item" onclick="logout()">退出登录</a>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 搜索框 -->
+      <div class="search-container">
+        <input type="text" id="global-search-input" class="search-input" placeholder="搜索作品、摄影师...">
+        <button type="button" id="global-search-btn" class="search-btn">搜索</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 页面内容 -->
+  <main class="content">
+
+    <!-- 首页轮播/英雄区 -->
+    <section class="hero-section" style="background-color: #f8f9fa; padding: 2rem 0;">
+      <div class="container">
+        <div class="page-header">
+          <h1 class="page-title">欢迎来到交通图库</h1>
+          <p class="page-subtitle">全品类交通摄影作品分享平台，记录每一个精彩瞬间</p>
+        </div>
+        
+        <!-- 分类入口网格 -->
+        <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 3rem;">
+          <!-- 铁路分类 -->
+          <a href="gallery.html?category=railway" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚄</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">铁路</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">高铁、普速、地铁等</p>
+          </a>
+          <!-- 航空分类 -->
+          <a href="gallery.html?category=aviation" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✈️</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">航空</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">民航、通用航空等</p>
+          </a>
+          <!-- 陆运分类 -->
+          <a href="gallery.html?category=land" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚌</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">陆运</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">客车、公交、出租车等</p>
+          </a>
+          <!-- 水运分类 -->
+          <a href="gallery.html?category=water" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚢</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">水运</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">邮轮、货轮、游艇等</p>
+          </a>
+          <!-- 特殊交通分类 -->
+          <a href="gallery.html?category=special" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚡</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">特殊</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">索道、磁悬浮等</p>
+          </a>
+          <!-- 风景人文分类 -->
+          <a href="gallery.html?category=culture" class="category-card" style="background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 1.5rem; text-align: center; transition: transform 0.3s ease; text-decoration: none; color: #333;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📷</div>
+            <h3 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem;">风景人文</h3>
+            <p style="font-size: 0.9rem; color: #7f8c8d;">交通枢纽、旅途风光等</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 精选作品区 -->
+    <section class="featured-section" style="padding: 3rem 0; background-color: #fff;">
+      <div class="container">
+        <h2 class="page-title" style="text-align: left; margin-bottom: 2rem;">精选作品</h2>
+        <!-- 精选作品容器，由JavaScript动态渲染 -->
+        <div class="works-grid" id="featured-works"></div>
+        <div class="text-center" style="margin-top: 2rem;">
+          <a href="gallery.html" class="btn btn-primary">查看更多作品</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 最新上传区 -->
+    <section class="latest-section" style="padding: 3rem 0; background-color: #f8f9fa;">
+      <div class="container">
+        <h2 class="page-title" style="text-align: left; margin-bottom: 2rem;">最新上传</h2>
+        <!-- 最新作品容器，由JavaScript动态渲染 -->
+        <div class="works-grid" id="latest-works"></div>
+      </div>
+    </section>
+
+    <!-- 热门标签区 -->
+    <section class="tags-section" style="padding: 3rem 0; background-color: #fff;">
+      <div class="container">
+        <h2 class="page-title" style="text-align: left; margin-bottom: 2rem;">热门标签</h2>
+        <!-- 标签云展示 -->
+        <div class="tag-cloud" style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+          <a href="gallery.html?tag=日落" class="tag">日落</a>
+          <a href="gallery.html?tag=雪景" class="tag">雪景</a>
+          <a href="gallery.html?tag=城市夜景" class="tag">城市夜景</a>
+          <a href="gallery.html?tag=复古" class="tag">复古</a>
+          <a href="gallery.html?tag=现代科技" class="tag">现代科技</a>
+          <a href="gallery.html?tag=春运" class="tag">春运</a>
+          <a href="gallery.html?tag=首发车" class="tag">首发车</a>
+          <a href="gallery.html?tag=经典机型" class="tag">经典机型</a>
+          <a href="gallery.html?tag=港口日出" class="tag">港口日出</a>
+          <a href="gallery.html?tag=山间铁路" class="tag">山间铁路</a>
+          <a href="gallery.html?tag=长安街" class="tag">长安街</a>
+          <a href="gallery.html?tag=高铁站" class="tag">高铁站</a>
+          <a href="gallery.html?tag=云海" class="tag">云海</a>
+          <a href="gallery.html?tag=老火车" class="tag">老火车</a>
+          <a href="gallery.html?tag=邮轮" class="tag">邮轮</a>
+          <a href="gallery.html?tag=地铁" class="tag">地铁</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-row">
+        <!-- 关于我们链接 -->
+        <div class="footer-col">
+          <h3>关于我们</h3>
+          <ul class="footer-links">
+            <li><a href="about.html">关于交通图库</a></li>
+            <li><a href="about.html#rules">使用规则</a></li>
+            <li><a href="about.html#contact">联系我们</a></li>
+          </ul>
+        </div>
+        <!-- 快速链接 -->
+        <div class="footer-col">
+          <h3>快速链接</h3>
+          <ul class="footer-links">
+            <li><a href="gallery.html">最新作品</a></li>
+            <li><a href="gallery.html?sort=popular">热门作品</a></li>
+            <li><a href="upload.html">上传作品</a></li>
+          </ul>
+        </div>
+        <!-- 帮助中心 -->
+        <div class="footer-col">
+          <h3>帮助中心</h3>
+          <ul class="footer-links">
+            <li><a href="faq.html">常见问题</a></li>
+            <li><a href="bug.html">提交BUG</a></li>
+            <li><a href="bug-list.html">BUG列表</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 统计信息 -->
+      <div class="footer-stats">
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="online-users"></span>
+          <span class="footer-stats-label">在线人数</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="total-visits"></span>
+          <span class="footer-stats-label">累计访问</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="registered-users"></span>
+          <span class="footer-stats-label">注册用户</span>
+        </div>
+        <div class="footer-stats-item">
+          <span class="footer-stats-number" id="today-visits"></span>
+          <span class="footer-stats-label">今日访问</span>
+        </div>
+      </div>
+      
+      <!-- 版权信息 -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 交通图库 - 全品类交通摄影作品分享平台 | 版本 v1.0.0</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <div style="text-align: center;" class="back-to-top" id="back-to-top">↑</div>
+
+  <!-- 版本提示 -->
+  <div style="text-align: center;background-color: #da730d;padding: 2rem 0;">
+      <p id="error-message" style="color: #000000; font-size: 0.9rem; margin-top: 0.5rem;">
+        V1.0.0-α-alpha 版本存在大量问题
+      </p>
+      <a href="bug.html" target="_blank" style="text-align: center;inline-size: none;display: inline-block; margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: #e74c3c; color: #fff; border-radius: 4px; text-decoration: none; font-size: 0.9rem;">
+        如遇bug点此汇报
+      </a>
+  </div>
+  
+  <!-- 开屏公告脚本 -->
+  <script src="js/splash-announcement.js"></script>
+
+  <!-- 首页脚本 -->
+  <script>
+    /**
+     * 页面加载完成后执行初始化
+     * 
+     * 【执行内容】
+     * 1. 初始化开屏公告
+     * 2. 渲染精选作品列表
+     * 3. 渲染最新作品列表
+     * 
+     * 【说明】
+     * 使用DOMContentLoaded事件确保DOM元素加载完成后执行
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化开屏公告
+      initSplashAnnouncement();
+      // 渲染精选作品
+      renderFeaturedWorks();
+      // 渲染最新作品列表
+      renderLatestWorks();
+    });
+
+    /**
+     * 渲染精选作品
+     * 
+     * 【功能说明】
+     * 1. 获取所有作品数据
+     * 2. 按点赞数降序排序
+     * 3. 取前6个作品作为精选
+     * 4. 动态生成作品卡片HTML
+     * 5. 渲染到页面中
+     * 
+     * 【数据来源】
+     * 从data.js的getAllWorks()函数获取作品数据
+     */
+    function renderFeaturedWorks() {
+      const works = getAllWorks();
+      // 按点赞数排序，取前6个
+      const featuredWorks = works.sort((a, b) => b.likes - a.likes).slice(0, 6);
+      const container = document.getElementById('featured-works');
+      
+      if (featuredWorks.length > 0) {
+        let html = '';
+        featuredWorks.forEach(work => {
+          const category = CATEGORIES[work.category.main];
+          html += `
+            <div class="work-card" onclick="goToWorkDetail(${work.id})"><!-- 作品卡片 -->
+              <div class="card-img-wrapper">
+                <img 
+                  src="${work.thumbnailUrl}" 
+                  alt="${work.title}" 
+                  loading="lazy"<!-- 图片懒加载 -->
+                >
+                <span class="category-badge" style="background-color: ${category.themeColor}">
+                  ${category.icon} ${category.name}
+                </span>
+              </div>
+              <div class="card-content">
+                <h3 class="work-title">${work.title}</h3>
+                <p class="work-meta">
+                  <span>📷 ${work.photographer}</span>
+                  <span>📍 ${work.location}</span>
+                </p>
+                <div class="work-tags">
+                  ${work.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <div class="work-stats">
+                  <span>👁️ ${work.views}</span>
+                  <span>❤️ ${work.likes}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } else {
+        container.innerHTML = '<div class="no-data" style="text-align: center; padding: 3rem; color: #7f8c8d;">暂无精选作品</div>';
+      }
+    }
+
+    /**
+     * 渲染最新作品
+     * 
+     * 【功能说明】
+     * 1. 获取所有作品数据
+     * 2. 按上传时间降序排序
+     * 3. 取前6个作品作为最新
+     * 4. 动态生成作品卡片HTML
+     * 5. 渲染到页面中
+     * 
+     * 【数据来源】
+     * 从data.js的getAllWorks()函数获取作品数据
+     */
+    function renderLatestWorks() {
+      const works = getAllWorks();
+      // 按上传时间排序，取前6个
+      const latestWorks = works.sort((a, b) => new Date(b.uploadTime) - new Date(a.uploadTime)).slice(0, 6);
+      const container = document.getElementById('latest-works');
+      
+      if (latestWorks.length > 0) {
+        let html = '';
+        latestWorks.forEach(work => {
+          const category = CATEGORIES[work.category.main];
+          html += `
+            <div class="work-card" onclick="goToWorkDetail(${work.id})"><!-- 作品卡片 -->
+              <div class="card-img-wrapper">
+                <img 
+                  src="${work.thumbnailUrl}" 
+                  alt="${work.title}" 
+                  loading="lazy"<!-- 图片懒加载 -->
+                >
+                <span class="category-badge" style="background-color: ${category.themeColor}">
+                  ${category.icon} ${category.name}
+                </span>
+              </div>
+              <div class="card-content">
+                <h3 class="work-title">${work.title}</h3>
+                <p class="work-meta">
+                  <span>📷 ${work.photographer}</span>
+                  <span>📍 ${work.location}</span>
+                </p>
+                <div class="work-tags">
+                  ${work.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <div class="work-stats">
+                  <span>👁️ ${work.views}</span>
+                  <span>❤️ ${work.likes}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } else {
+        container.innerHTML = '<div class="no-data" style="text-align: center; padding: 3rem; color: #7f8c8d;">暂无最新作品</div>';
+      }
+    }
+  </script>
+</body>
+</html>
